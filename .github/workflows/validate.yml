@@ -1,0 +1,31 @@
+name: Validate WiFi Checker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check JavaScript syntax
+        run: node --check app.js
+      - name: Check referenced DOM IDs
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('index.html').read_text()
+          js = Path('app.js').read_text()
+          ids = set(re.findall(r'id="([^"]+)"', html))
+          used = set(re.findall(r"\$\('([^']+)'\)", js))
+          missing = sorted(used - ids)
+          if missing:
+              raise SystemExit('Missing DOM IDs: ' + ', '.join(missing))
+          print(f'OK: {len(used)} referenced IDs found in HTML')
+          PY
