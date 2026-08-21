@@ -1,11 +1,11 @@
 {
   "name": "WiFi Checker Pro",
   "short_name": "WiFi Checker",
-  "description": "Real browser-based network diagnostics and speed test.",
+  "description": "Real browser-based network diagnostics, speed test, measurement confidence, and connection quality intelligence.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#090a09",
-  "theme_color": "#090a09",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
