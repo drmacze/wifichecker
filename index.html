@@ -15,228 +15,32 @@
   <div class="ambient ambient-a" aria-hidden="true"></div>
   <div class="ambient ambient-b" aria-hidden="true"></div>
   <div class="noise" aria-hidden="true"></div>
-
   <header class="topbar shell">
-    <a class="brand" href="#top" aria-label="WiFi Checker Pro">
-      <span class="brand-logo"><span></span><span></span><span></span></span>
-      <span class="brand-copy"><b>WiFi Checker</b><small>PRO · NETWORK LAB</small></span>
-    </a>
-    <nav class="top-actions" aria-label="Aksi cepat">
-      <span id="onlineBadge" class="live-badge"><i></i><span>Memeriksa…</span></span>
-      <button id="privacyBtn" class="ghost-icon" type="button" title="Privasi & izin" aria-label="Privasi dan izin">⌾</button>
-      <button id="themeBtn" class="ghost-icon" type="button" title="Ganti tema" aria-label="Ganti tema">◐</button>
-    </nav>
+    <a class="brand" href="#top" aria-label="WiFi Checker Pro"><span class="brand-logo"><span></span><span></span><span></span></span><span class="brand-copy"><b>WiFi Checker</b><small>PRO · NETWORK LAB</small></span></a>
+    <nav class="top-actions" aria-label="Aksi cepat"><span id="onlineBadge" class="live-badge"><i></i><span>Memeriksa…</span></span><button id="privacyBtn" class="ghost-icon" type="button" title="Privasi & izin" aria-label="Privasi dan izin">⌾</button><button id="themeBtn" class="ghost-icon" type="button" title="Ganti tema" aria-label="Ganti tema">◐</button></nav>
   </header>
-
   <main id="top" class="shell app-shell">
     <section class="hero-grid reveal">
-      <div class="hero-copy">
-        <div class="kicker"><span></span> REAL-TIME NETWORK DIAGNOSTICS</div>
-        <h1>Ukur koneksimu.<br><em>Lihat apa yang benar-benar terjadi.</em></h1>
-        <p class="hero-lead">Speed test, latency, jitter, loaded latency, DNS, identitas jaringan, dan lokasi perangkat — dengan data nyata yang tersedia dari browser.</p>
-        <div class="hero-actions">
-          <button id="runTestBtn" class="cta" type="button"><span class="cta-glow"></span><span class="cta-icon">▶</span><span><b>Mulai Full Test</b><small>Bandwidth + latency + diagnostics</small></span></button>
-          <button id="quickCheckBtn" class="soft-btn" type="button"><span>⚡</span> Quick Check</button>
-        </div>
-        <div class="trust-row">
-          <span><i>✓</i> Tidak ada hasil dummy</span>
-          <span><i>✓</i> Izin lokasi eksplisit</span>
-          <span><i>✓</i> Riwayat lokal</span>
-        </div>
-      </div>
-
-      <div class="hero-instrument glass-card">
-        <div class="instrument-top">
-          <div><span class="overline">LIVE TEST ENGINE</span><strong id="engineState">READY</strong></div>
-          <div id="edgeChip" class="edge-chip">EDGE <b>—</b></div>
-        </div>
-        <div class="dial-wrap">
-          <div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div>
-          <div id="speedDial" class="speed-dial" style="--meter:0deg">
-            <div class="dial-grid"></div>
-            <div class="dial-center">
-              <span id="dialLabel">NETWORK SCORE</span>
-              <strong id="dialValue">—</strong>
-              <small id="dialUnit">/ 100</small>
-            </div>
-            <div id="dialNeedle" class="dial-needle"></div>
-            <div class="dial-hub"></div>
-          </div>
-        </div>
-        <div class="signal-strip" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <p id="scoreHint" class="instrument-hint">Siap untuk mengukur koneksi secara nyata.</p>
-      </div>
+      <div class="hero-copy"><div class="kicker"><span></span> REAL-TIME NETWORK DIAGNOSTICS</div><h1>Ukur koneksimu.<br><em>Lihat apa yang benar-benar terjadi.</em></h1><p class="hero-lead">Speed test, latency, jitter, loaded latency, DNS, identitas jaringan, dan lokasi perangkat — dengan data nyata yang tersedia dari browser.</p><div class="hero-actions"><button id="runTestBtn" class="cta" type="button"><span class="cta-glow"></span><span class="cta-icon">▶</span><span><b>Mulai Full Test</b><small>Bandwidth + latency + diagnostics</small></span></button><button id="quickCheckBtn" class="soft-btn" type="button"><span>⚡</span> Quick Check</button></div><div class="trust-row"><span><i>✓</i> Tidak ada hasil dummy</span><span><i>✓</i> Izin lokasi eksplisit</span><span><i>✓</i> Riwayat lokal</span></div></div>
+      <div class="hero-instrument glass-card"><div class="instrument-top"><div><span class="overline">LIVE TEST ENGINE</span><strong id="engineState">READY</strong></div><div id="edgeChip" class="edge-chip">EDGE <b>—</b></div></div><div class="dial-wrap"><div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div><div id="speedDial" class="speed-dial" style="--meter:0deg"><div class="dial-grid"></div><div class="dial-center"><span id="dialLabel">NETWORK SCORE</span><strong id="dialValue">—</strong><small id="dialUnit">/ 100</small></div><div id="dialNeedle" class="dial-needle"></div><div class="dial-hub"></div></div></div><div class="signal-strip" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><p id="scoreHint" class="instrument-hint">Siap untuk mengukur koneksi secara nyata.</p></div>
     </section>
-
-    <section class="status-rail reveal">
-      <div><span class="status-dot"></span><b id="connectionStatus">—</b><small>Status internet</small></div>
-      <div><b id="connectionType">—</b><small>Tipe koneksi</small></div>
-      <div><b id="publicIp">Memuat…</b><small>Public IP</small></div>
-      <div><b id="networkLocation">—</b><small>Lokasi IP</small></div>
-      <div class="rail-time"><b id="lastUpdated">—</b><small>Pembaruan terakhir</small></div>
-    </section>
-
-    <section class="section-head reveal">
-      <div><span class="overline">PERFORMANCE</span><h2>Hasil pengukuran</h2></div>
-      <span id="testModeBadge" class="tiny-badge">Belum diuji</span>
-    </section>
-
-    <section class="metrics-grid reveal">
-      <article class="metric glass-card accent-blue">
-        <div class="metric-head"><span class="metric-icon">↓</span><span>DOWNLOAD</span></div>
-        <div class="metric-number"><b id="downloadValue">—</b><small>Mbps</small></div>
-        <div class="metric-foot"><span id="downloadGrade">Belum diuji</span><canvas id="downloadSpark" width="180" height="40"></canvas></div>
-      </article>
-      <article class="metric glass-card accent-violet">
-        <div class="metric-head"><span class="metric-icon">↑</span><span>UPLOAD</span></div>
-        <div class="metric-number"><b id="uploadValue">—</b><small>Mbps</small></div>
-        <div class="metric-foot"><span id="uploadGrade">Belum diuji</span><canvas id="uploadSpark" width="180" height="40"></canvas></div>
-      </article>
-      <article class="metric glass-card accent-cyan">
-        <div class="metric-head"><span class="metric-icon">↔</span><span>PING</span></div>
-        <div class="metric-number"><b id="pingValue">—</b><small>ms</small></div>
-        <div class="metric-foot"><span id="pingGrade">Belum diuji</span><canvas id="pingSpark" width="180" height="40"></canvas></div>
-      </article>
-      <article class="metric glass-card accent-green">
-        <div class="metric-head"><span class="metric-icon">≈</span><span>JITTER</span></div>
-        <div class="metric-number"><b id="jitterValue">—</b><small>ms</small></div>
-        <div class="metric-foot"><span id="jitterGrade">Belum diuji</span><canvas id="jitterSpark" width="180" height="40"></canvas></div>
-      </article>
-    </section>
-
-    <section class="test-console glass-card reveal" aria-live="polite">
-      <div class="console-header">
-        <div class="console-state"><span class="pulse-dot"></span><div><span class="overline">TEST PIPELINE</span><h3 id="testStage">Siap menjalankan tes</h3></div></div>
-        <strong id="testPercent">0%</strong>
-      </div>
-      <div class="progress-shell"><div id="progressBar" class="progress-bar"></div><div class="progress-scan"></div></div>
-      <div class="console-bottom"><p id="testMessage">Tekan “Mulai Full Test” untuk memulai.</p><button id="cancelTestBtn" class="text-btn hidden" type="button">Batalkan</button></div>
-    </section>
-
+    <section class="status-rail reveal"><div><span class="status-dot"></span><b id="connectionStatus">—</b><small>Status internet</small></div><div><b id="connectionType">—</b><small>Tipe koneksi</small></div><div><b id="publicIp">Jalankan tes</b><small>Public IP</small></div><div><b id="networkLocation">Jalankan tes</b><small>Lokasi IP</small></div><div class="rail-time"><b id="lastUpdated">—</b><small>Pembaruan terakhir</small></div></section>
+    <section class="section-head reveal"><div><span class="overline">PERFORMANCE</span><h2>Hasil pengukuran</h2></div><span id="testModeBadge" class="tiny-badge">Belum diuji</span></section>
+    <section class="metrics-grid reveal"><article class="metric glass-card accent-blue"><div class="metric-head"><span class="metric-icon">↓</span><span>DOWNLOAD</span></div><div class="metric-number"><b id="downloadValue">—</b><small>Mbps</small></div><div class="metric-foot"><span id="downloadGrade">Belum diuji</span><canvas id="downloadSpark" width="180" height="40"></canvas></div></article><article class="metric glass-card accent-violet"><div class="metric-head"><span class="metric-icon">↑</span><span>UPLOAD</span></div><div class="metric-number"><b id="uploadValue">—</b><small>Mbps</small></div><div class="metric-foot"><span id="uploadGrade">Belum diuji</span><canvas id="uploadSpark" width="180" height="40"></canvas></div></article><article class="metric glass-card accent-cyan"><div class="metric-head"><span class="metric-icon">↔</span><span>PING</span></div><div class="metric-number"><b id="pingValue">—</b><small>ms</small></div><div class="metric-foot"><span id="pingGrade">Belum diuji</span><canvas id="pingSpark" width="180" height="40"></canvas></div></article><article class="metric glass-card accent-green"><div class="metric-head"><span class="metric-icon">≈</span><span>JITTER</span></div><div class="metric-number"><b id="jitterValue">—</b><small>ms</small></div><div class="metric-foot"><span id="jitterGrade">Belum diuji</span><canvas id="jitterSpark" width="180" height="40"></canvas></div></article></section>
+    <section class="test-console glass-card reveal" aria-live="polite"><div class="console-header"><div class="console-state"><span class="pulse-dot"></span><div><span class="overline">TEST PIPELINE</span><h3 id="testStage">Siap menjalankan tes</h3></div></div><strong id="testPercent">0%</strong></div><div class="progress-shell"><div id="progressBar" class="progress-bar"></div><div class="progress-scan"></div></div><div class="console-bottom"><p id="testMessage">Tekan “Mulai Full Test” untuk memulai.</p><button id="cancelTestBtn" class="text-btn hidden" type="button">Batalkan</button></div></section>
     <section class="detail-grid reveal">
-      <article class="panel glass-card location-panel">
-        <div class="panel-title"><div><span class="overline">DEVICE LOCATION</span><h2>Lokasi perangkat</h2></div><span id="locationPermissionPill" class="permission-pill neutral">Belum diminta</span></div>
-        <div class="location-visual"><div class="location-radar"><i></i><i></i><i></i><b></b></div><div><strong id="deviceCoords">Belum tersedia</strong><span id="deviceAccuracy">Lokasi presisi hanya diminta setelah persetujuan.</span></div></div>
-        <dl class="info-list compact-list">
-          <div><dt>Latitude</dt><dd id="latitude">—</dd></div>
-          <div><dt>Longitude</dt><dd id="longitude">—</dd></div>
-          <div><dt>Akurasi browser</dt><dd id="geoAccuracy">—</dd></div>
-          <div><dt>Altitude</dt><dd id="altitude">—</dd></div>
-        </dl>
-        <div class="privacy-callout"><b>Privasi</b><p>Koordinat presisi tidak dimasukkan ke riwayat lokal. Jika izin ditolak, tes jaringan tetap berjalan.</p></div>
-      </article>
-
-      <article class="panel glass-card">
-        <div class="panel-title"><div><span class="overline">NETWORK IDENTITY</span><h2>Internet & edge</h2></div><span class="panel-symbol">◎</span></div>
-        <dl class="info-list">
-          <div><dt>Public IP</dt><dd id="publicIpDetail">Memuat…</dd></div>
-          <div><dt>ISP / Organization</dt><dd id="isp">Memuat…</dd></div>
-          <div><dt>ASN</dt><dd id="asn">—</dd></div>
-          <div><dt>Cloudflare edge</dt><dd id="colo">—</dd></div>
-          <div><dt>Protocol</dt><dd id="protocol">—</dd></div>
-          <div><dt>Secure context</dt><dd id="secureContext">—</dd></div>
-        </dl>
-        <p class="footnote">Lokasi IP dan lokasi GPS/perangkat adalah dua sumber berbeda dan ditampilkan terpisah.</p>
-      </article>
-
-      <article class="panel glass-card">
-        <div class="panel-title"><div><span class="overline">CONNECTION API</span><h2>Detail koneksi</h2></div><span class="panel-symbol">⌁</span></div>
-        <dl class="info-list">
-          <div><dt>Effective type</dt><dd id="effectiveType">—</dd></div>
-          <div><dt>Estimasi downlink</dt><dd id="estimatedDownlink">—</dd></div>
-          <div><dt>Estimasi RTT</dt><dd id="estimatedRtt">—</dd></div>
-          <div><dt>Data Saver</dt><dd id="saveData">—</dd></div>
-          <div><dt>Loaded latency ↓</dt><dd id="downLoadedLatency">—</dd></div>
-          <div><dt>Loaded latency ↑</dt><dd id="upLoadedLatency">—</dd></div>
-        </dl>
-        <div id="bufferbloatBox" class="quality-box"><span>BUFFERBLOAT</span><b id="bufferbloatGrade">Belum diuji</b><small id="bufferbloatDelta">—</small></div>
-      </article>
-
-      <article class="panel glass-card">
-        <div class="panel-title"><div><span class="overline">DEVICE</span><h2>Browser & perangkat</h2></div><span class="panel-symbol">▣</span></div>
-        <dl class="info-list">
-          <div><dt>Browser</dt><dd id="browserName">—</dd></div>
-          <div><dt>Platform</dt><dd id="platform">—</dd></div>
-          <div><dt>CPU threads</dt><dd id="cpuCores">—</dd></div>
-          <div><dt>Device memory</dt><dd id="deviceMemory">—</dd></div>
-          <div><dt>Screen</dt><dd id="screenInfo">—</dd></div>
-          <div><dt>Network API</dt><dd id="networkApiState">—</dd></div>
-        </dl>
-      </article>
+      <article class="panel glass-card location-panel"><div class="panel-title"><div><span class="overline">DEVICE LOCATION</span><h2>Lokasi perangkat</h2></div><span id="locationPermissionPill" class="permission-pill neutral">Belum diminta</span></div><div class="location-visual"><div class="location-radar"><i></i><i></i><i></i><b></b></div><div><strong id="deviceCoords">Belum tersedia</strong><span id="deviceAccuracy">Lokasi presisi hanya diminta setelah persetujuan.</span></div></div><dl class="info-list compact-list"><div><dt>Latitude</dt><dd id="latitude">—</dd></div><div><dt>Longitude</dt><dd id="longitude">—</dd></div><div><dt>Akurasi browser</dt><dd id="geoAccuracy">—</dd></div><div><dt>Altitude</dt><dd id="altitude">—</dd></div></dl><div class="privacy-callout"><b>Privasi</b><p>Koordinat presisi tidak dimasukkan ke riwayat lokal. Jika izin ditolak, tes jaringan tetap berjalan.</p></div></article>
+      <article class="panel glass-card"><div class="panel-title"><div><span class="overline">NETWORK IDENTITY</span><h2>Internet & edge</h2></div><span class="panel-symbol">◎</span></div><dl class="info-list"><div><dt>Public IP</dt><dd id="publicIpDetail">Jalankan tes</dd></div><div><dt>ISP / Organization</dt><dd id="isp">Jalankan tes</dd></div><div><dt>ASN</dt><dd id="asn">—</dd></div><div><dt>Cloudflare edge</dt><dd id="colo">—</dd></div><div><dt>Protocol</dt><dd id="protocol">—</dd></div><div><dt>Secure context</dt><dd id="secureContext">—</dd></div></dl><p class="footnote">Lokasi IP dan lokasi GPS/perangkat adalah dua sumber berbeda dan ditampilkan terpisah.</p></article>
+      <article class="panel glass-card"><div class="panel-title"><div><span class="overline">CONNECTION API</span><h2>Detail koneksi</h2></div><span class="panel-symbol">⌁</span></div><dl class="info-list"><div><dt>Effective type</dt><dd id="effectiveType">—</dd></div><div><dt>Estimasi downlink</dt><dd id="estimatedDownlink">—</dd></div><div><dt>Estimasi RTT</dt><dd id="estimatedRtt">—</dd></div><div><dt>Data Saver</dt><dd id="saveData">—</dd></div><div><dt>Loaded latency ↓</dt><dd id="downLoadedLatency">—</dd></div><div><dt>Loaded latency ↑</dt><dd id="upLoadedLatency">—</dd></div></dl><div id="bufferbloatBox" class="quality-box"><span>BUFFERBLOAT</span><b id="bufferbloatGrade">Belum diuji</b><small id="bufferbloatDelta">—</small></div></article>
+      <article class="panel glass-card"><div class="panel-title"><div><span class="overline">DEVICE</span><h2>Browser & perangkat</h2></div><span class="panel-symbol">▣</span></div><dl class="info-list"><div><dt>Browser</dt><dd id="browserName">—</dd></div><div><dt>Platform</dt><dd id="platform">—</dd></div><div><dt>CPU threads</dt><dd id="cpuCores">—</dd></div><div><dt>Device memory</dt><dd id="deviceMemory">—</dd></div><div><dt>Screen</dt><dd id="screenInfo">—</dd></div><div><dt>Network API</dt><dd id="networkApiState">—</dd></div></dl></article>
     </section>
-
-    <section class="wide-grid reveal">
-      <article class="panel glass-card dns-panel">
-        <div class="panel-title"><div><span class="overline">DNS RESOLVER TEST</span><h2>DNS diagnostics</h2></div><button id="dnsBtn" class="mini-btn" type="button">Tes ulang</button></div>
-        <div class="dns-cards">
-          <div class="dns-card"><span class="resolver-logo">1.1</span><div><b>Cloudflare DoH</b><small>cloudflare-dns.com</small></div><strong id="cloudflareDns">Belum dites</strong></div>
-          <div class="dns-card"><span class="resolver-logo google">G</span><div><b>Google DoH</b><small>dns.google</small></div><strong id="googleDns">Belum dites</strong></div>
-        </div>
-        <div class="fastest-row"><span>Resolver tercepat pada tes ini</span><b id="fastestDns">—</b></div>
-        <p class="footnote">Ini menguji resolver DNS-over-HTTPS publik, bukan membaca DNS yang dikonfigurasi di router/perangkat.</p>
-      </article>
-
-      <article class="panel glass-card diagnostics-panel">
-        <div class="panel-title"><div><span class="overline">HEALTH MATRIX</span><h2>Diagnostik otomatis</h2></div><span class="panel-symbol">✦</span></div>
-        <div id="diagnostics" class="diag-list">
-          <div class="diag" data-diag="internet"><i></i><span><b>Koneksi internet</b><small>Status online browser</small></span><strong>—</strong></div>
-          <div class="diag" data-diag="https"><i></i><span><b>HTTPS / secure context</b><small>Diperlukan untuk geolocation</small></span><strong>—</strong></div>
-          <div class="diag" data-diag="speed"><i></i><span><b>Cloudflare speed edge</b><small>Endpoint pengukuran bandwidth</small></span><strong>—</strong></div>
-          <div class="diag" data-diag="network-api"><i></i><span><b>Network Information API</b><small>Informasi koneksi tambahan</small></span><strong>—</strong></div>
-          <div class="diag" data-diag="geolocation"><i></i><span><b>Geolocation API</b><small>Lokasi perangkat dengan izin</small></span><strong>—</strong></div>
-        </div>
-      </article>
-    </section>
-
-    <section class="section-head reveal"><div><span class="overline">INSIGHTS</span><h2>Analisis hasil</h2></div></section>
-    <section class="insight-grid reveal">
-      <article class="panel glass-card"><div class="panel-title"><div><span class="overline">SMART TIPS</span><h2>Rekomendasi</h2></div><span class="panel-symbol">✦</span></div><div id="recommendations" class="tips-list"><p class="empty-state">Rekomendasi muncul setelah Full Test selesai.</p></div></article>
-      <article class="panel glass-card"><div class="panel-title"><div><span class="overline">LOCAL HISTORY</span><h2>Riwayat tes</h2></div><button id="clearHistoryBtn" class="text-btn" type="button">Hapus</button></div><div id="historyList" class="history-list"><p class="empty-state">Belum ada riwayat di browser ini.</p></div></article>
-    </section>
-
-    <section class="export-bar glass-card reveal">
-      <div><span class="overline">RESULT DATA</span><h2>Simpan atau bagikan hasil</h2><p>Ringkasan ekspor hanya memuat data diagnostik; koordinat presisi perangkat tidak ikut diekspor.</p></div>
-      <div><button id="copyBtn" class="soft-btn" type="button">Salin ringkasan</button><button id="exportBtn" class="cta compact" type="button"><span>Export JSON</span></button></div>
-    </section>
+    <section class="wide-grid reveal"><article class="panel glass-card dns-panel"><div class="panel-title"><div><span class="overline">DNS RESOLVER TEST</span><h2>DNS diagnostics</h2></div><button id="dnsBtn" class="mini-btn" type="button">Tes ulang</button></div><div class="dns-cards"><div class="dns-card"><span class="resolver-logo">1.1</span><div><b>Cloudflare DoH</b><small>cloudflare-dns.com</small></div><strong id="cloudflareDns">Belum dites</strong></div><div class="dns-card"><span class="resolver-logo google">G</span><div><b>Google DoH</b><small>dns.google</small></div><strong id="googleDns">Belum dites</strong></div></div><div class="fastest-row"><span>Resolver tercepat pada tes ini</span><b id="fastestDns">—</b></div><p class="footnote">Ini menguji resolver DNS-over-HTTPS publik, bukan membaca DNS yang dikonfigurasi di router/perangkat.</p></article><article class="panel glass-card diagnostics-panel"><div class="panel-title"><div><span class="overline">HEALTH MATRIX</span><h2>Diagnostik otomatis</h2></div><span class="panel-symbol">✦</span></div><div id="diagnostics" class="diag-list"><div class="diag" data-diag="internet"><i></i><span><b>Koneksi internet</b><small>Status online browser</small></span><strong>—</strong></div><div class="diag" data-diag="https"><i></i><span><b>HTTPS / secure context</b><small>Diperlukan untuk geolocation</small></span><strong>—</strong></div><div class="diag" data-diag="speed"><i></i><span><b>Cloudflare speed edge</b><small>Endpoint pengukuran bandwidth</small></span><strong>—</strong></div><div class="diag" data-diag="network-api"><i></i><span><b>Network Information API</b><small>Informasi koneksi tambahan</small></span><strong>—</strong></div><div class="diag" data-diag="geolocation"><i></i><span><b>Geolocation API</b><small>Lokasi perangkat dengan izin</small></span><strong>—</strong></div></div></article></section>
+    <section class="section-head reveal"><div><span class="overline">INSIGHTS</span><h2>Analisis hasil</h2></div></section><section class="insight-grid reveal"><article class="panel glass-card"><div class="panel-title"><div><span class="overline">SMART TIPS</span><h2>Rekomendasi</h2></div><span class="panel-symbol">✦</span></div><div id="recommendations" class="tips-list"><p class="empty-state">Rekomendasi muncul setelah Full Test selesai.</p></div></article><article class="panel glass-card"><div class="panel-title"><div><span class="overline">LOCAL HISTORY</span><h2>Riwayat tes</h2></div><button id="clearHistoryBtn" class="text-btn" type="button">Hapus</button></div><div id="historyList" class="history-list"><p class="empty-state">Belum ada riwayat di browser ini.</p></div></article></section>
+    <section class="export-bar glass-card reveal"><div><span class="overline">RESULT DATA</span><h2>Simpan atau bagikan hasil</h2><p>Ringkasan ekspor hanya memuat data diagnostik; koordinat presisi perangkat tidak ikut diekspor.</p></div><div><button id="copyBtn" class="soft-btn" type="button">Salin ringkasan</button><button id="exportBtn" class="cta compact" type="button"><span>Export JSON</span></button></div></section>
   </main>
-
   <footer class="shell footer"><span>WiFi Checker Pro</span><span>Real measurements · Browser privacy aware</span></footer>
-
-  <div id="permissionModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="permissionTitle">
-    <div class="modal-backdrop" data-close-modal></div>
-    <div class="modal-card">
-      <button class="modal-close" type="button" data-close-modal aria-label="Tutup">×</button>
-      <div class="modal-icon"><span>⌾</span></div>
-      <span class="overline">PERMISSION PREFLIGHT</span>
-      <h2 id="permissionTitle">Sebelum pengujian dimulai</h2>
-      <p class="modal-lead">Kami menjelaskan data apa yang dipakai terlebih dahulu. Tidak ada permission tersembunyi.</p>
-      <div class="permission-list">
-        <div class="permission-row"><span class="perm-icon">⌖</span><div><b>Lokasi perangkat</b><small>Browser akan meminta izin OS/browser. Dipakai untuk latitude, longitude, dan akurasi.</small></div><span id="geoPermissionState" class="permission-pill neutral">Memeriksa…</span></div>
-        <div class="permission-row"><span class="perm-icon">↕</span><div><b>Traffic speed test</b><small>Full Test mengirim/mengunduh data ke edge Cloudflare dan dapat memakai puluhan hingga ±120 MB.</small></div><span class="permission-pill info">Diperlukan</span></div>
-        <div class="permission-row"><span class="perm-icon">▣</span><div><b>Info browser & koneksi</b><small>Hanya API yang browser sediakan; tidak ada prompt permission terpisah.</small></div><span class="permission-pill info">Otomatis</span></div>
-        <label class="permission-row toggle-row"><span class="perm-icon">◴</span><div><b>Simpan riwayat lokal</b><small>Hasil tes disimpan di browser ini. Koordinat presisi tidak disimpan.</small></div><input id="historyConsent" type="checkbox" checked><span class="switch"></span></label>
-      </div>
-      <div class="modal-actions"><button id="runWithoutLocationBtn" class="soft-btn" type="button">Tanpa lokasi</button><button id="grantAndRunBtn" class="cta" type="button"><span class="cta-icon">⌖</span><span><b>Izinkan lokasi & mulai</b><small>Prompt browser akan muncul</small></span></button></div>
-      <p class="modal-foot">Geolocation membutuhkan HTTPS dan izin eksplisit browser. Jika ditolak, pengujian jaringan tetap dapat dilanjutkan.</p>
-    </div>
-  </div>
-
-  <div id="privacyModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
-    <div class="modal-backdrop" data-close-privacy></div>
-    <div class="modal-card small-modal">
-      <button class="modal-close" type="button" data-close-privacy aria-label="Tutup">×</button>
-      <span class="overline">PRIVACY & CAPABILITIES</span><h2 id="privacyTitle">Apa yang website ini bisa baca?</h2>
-      <div class="capability-list">
-        <p><b>Bisa dengan izin:</b> koordinat lokasi perangkat dan akurasi Geolocation API.</p>
-        <p><b>Bisa tanpa prompt:</b> IP publik, hasil speed test, latency, browser, layar, dan Network Information API bila didukung.</p>
-        <p><b>Tidak bisa dibaca website biasa:</b> password Wi‑Fi, BSSID/MAC router, channel Wi‑Fi, RSSI/dBm, atau daftar perangkat LAN.</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js" defer></script>
+  <div id="permissionModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="permissionTitle"><div class="modal-backdrop" data-close-modal></div><div class="modal-card"><button class="modal-close" type="button" data-close-modal aria-label="Tutup">×</button><div class="modal-icon"><span>⌾</span></div><span class="overline">PERMISSION PREFLIGHT</span><h2 id="permissionTitle">Sebelum pengujian dimulai</h2><p class="modal-lead">Kami menjelaskan data apa yang dipakai terlebih dahulu. Tidak ada permission tersembunyi.</p><div class="permission-list"><div class="permission-row"><span class="perm-icon">⌖</span><div><b>Lokasi perangkat</b><small>Browser akan meminta izin OS/browser. Dipakai untuk latitude, longitude, dan akurasi.</small></div><span id="geoPermissionState" class="permission-pill neutral">Memeriksa…</span></div><div class="permission-row"><span class="perm-icon">↕</span><div><b>Traffic speed test</b><small>Full Test mengirim/mengunduh data ke edge Cloudflare dan dapat memakai puluhan MB.</small></div><span class="permission-pill info">Diperlukan</span></div><div class="permission-row"><span class="perm-icon">▣</span><div><b>Info browser & koneksi</b><small>Hanya API yang browser sediakan; tidak ada prompt permission terpisah.</small></div><span class="permission-pill info">Otomatis</span></div><label class="permission-row toggle-row"><span class="perm-icon">◴</span><div><b>Simpan riwayat lokal</b><small>Hasil tes disimpan di browser ini. Koordinat presisi tidak disimpan.</small></div><input id="historyConsent" type="checkbox" checked><span class="switch"></span></label></div><div class="modal-actions"><button id="runWithoutLocationBtn" class="soft-btn" type="button">Tanpa lokasi</button><button id="grantAndRunBtn" class="cta" type="button"><span class="cta-icon">⌖</span><span><b>Izinkan lokasi & mulai</b><small>Prompt browser akan muncul</small></span></button></div><p class="modal-foot">Geolocation membutuhkan HTTPS dan izin eksplisit browser. Jika ditolak, pengujian jaringan tetap dapat dilanjutkan.</p></div></div>
+  <div id="privacyModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><div class="modal-backdrop" data-close-privacy></div><div class="modal-card small-modal"><button class="modal-close" type="button" data-close-privacy aria-label="Tutup">×</button><span class="overline">PRIVACY & CAPABILITIES</span><h2 id="privacyTitle">Apa yang website ini bisa baca?</h2><div class="capability-list"><p><b>Bisa dengan izin:</b> koordinat lokasi perangkat dan akurasi Geolocation API.</p><p><b>Bisa tanpa prompt:</b> IP publik, hasil speed test, latency, browser, layar, dan Network Information API bila didukung.</p><p><b>Tidak bisa dibaca website biasa:</b> password Wi‑Fi, BSSID/MAC router, channel Wi‑Fi, RSSI/dBm, atau daftar perangkat LAN.</p></div></div></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div><script src="app.js" defer></script>
 </body>
 </html>
