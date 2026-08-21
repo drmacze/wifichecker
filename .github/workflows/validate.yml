@@ -13,8 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
       - name: Check JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check motion.js
+          node --check sw.js
+
       - name: Check referenced DOM IDs
         run: |
           python3 - <<'PY'
@@ -28,4 +33,20 @@ jobs:
           if missing:
               raise SystemExit('Missing DOM IDs: ' + ', '.join(missing))
           print(f'OK: {len(used)} referenced IDs found in HTML')
+          PY
+
+      - name: Check motion assets and pinned libraries
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('index.html').read_text()
+          motion = Path('motion.js').read_text()
+          required_html = ['motion.css', 'motion.js', 'lucide@1.33.0']
+          required_motion = ['lenis@1.3.26', 'gsap@3.15.0', 'ScrollTrigger']
+          missing = [x for x in required_html if x not in html] + [x for x in required_motion if x not in motion]
+          if missing:
+              raise SystemExit('Missing motion integration: ' + ', '.join(missing))
+          if '@latest' in html or '@latest' in motion:
+              raise SystemExit('Unpinned dependency detected')
+          print('OK: motion stack is present and version-pinned')
           PY
