@@ -63,8 +63,8 @@ new MutationObserver(()=>paintBandwidth(downloadSource,downloadDisplay,downloadU
 new MutationObserver(()=>paintBandwidth(uploadSource,uploadDisplay,uploadUnit)).observe(uploadSource,{childList:true,characterData:true,subtree:true});
 
 function prettyScale(mbps){
-  const thresholds=[1,2.5,5,10,25,50,100,250,500,1000,2500,5000,10000,25000];
-  const wanted=Math.max(1,mbps*1.18);
+  const thresholds=[1,2.5,5,10,25,50,100,200,250,500,1000,2500,5000,10000,25000];
+  const wanted=Math.max(1,mbps*1.12);
   return thresholds.find(v=>v>=wanted)||Math.ceil(wanted/10000)*10000;
 }
 let meterState={deg:0,value:0};
@@ -79,7 +79,8 @@ function smoothDial(value,label='NETWORK SCORE',incomingUnit='/ 100',incomingMax
   const isBandwidth=/DOWNLOAD|UPLOAD/i.test(label);
   const finite=Number.isFinite(value);
   const raw=finite?value:0;
-  const max=isBandwidth?prettyScale(Math.max(raw,1)):Math.max(1,incomingMax||100);
+  const baseline=isBandwidth?Math.max(Number(incomingMax)||0,/UPLOAD/i.test(label)?100:200):Math.max(1,incomingMax||100);
+  const max=isBandwidth?Math.max(baseline,prettyScale(Math.max(raw,1))):baseline;
   const targetDeg=clamp(raw/max,0,1)*290;
   lastMeter={value:finite?value:NaN,label,max,isBandwidth};
   setScale(max,isBandwidth);
@@ -110,6 +111,7 @@ unitSelect.addEventListener('change',()=>{
   localStorage.setItem(UNIT_KEY,unit);
   repaintBandwidth();
   rerenderLiveMeter();
+  rewriteStatusUnit();
 });
 repaintBandwidth();
 
