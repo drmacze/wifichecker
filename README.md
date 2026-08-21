@@ -1,76 +1,86 @@
 # WiFi Checker Pro
 
-WiFi Checker Pro adalah dashboard diagnostik jaringan berbasis browser untuk mengecek kualitas koneksi Internet/Wi‑Fi tanpa aplikasi tambahan.
+Dashboard diagnostik jaringan berbasis browser dengan pengukuran nyata, consent-first geolocation, dan UI network-lab yang responsif.
 
-## Fitur
+## Fitur utama
 
-- Download speed test
-- Upload speed test
-- Ping / latency
-- Jitter
-- Network quality score 0–100
-- Status online/offline
-- Network Information API jika didukung browser
-- Public IP
-- ISP / organization
-- ASN
-- Cloudflare edge/colo
-- Perkiraan lokasi berdasarkan IP
-- Cloudflare DNS-over-HTTPS diagnostic
-- Google Public DNS-over-HTTPS diagnostic
-- Browser & device capability info
-- Smart recommendations berdasarkan hasil tes
-- Riwayat hasil di `localStorage`
-- Copy summary
-- Export JSON
-- Dark/light theme
-- PWA manifest + offline app shell
-- Responsive untuk desktop dan mobile
+- Download dan upload speed test ke Cloudflare edge
+- Idle ping / latency dan jitter
+- Loaded latency saat download dan upload
+- Indikator bufferbloat berbasis kenaikan loaded latency
+- Network quality score 0–100 untuk Full Test
+- Quick Check dengan payload lebih kecil
+- Public IP, ISP / organization, ASN, Cloudflare edge/colo, dan perkiraan lokasi IP
+- Geolocation perangkat melalui Geolocation API setelah persetujuan pengguna
+- Cloudflare dan Google DNS-over-HTTPS diagnostics
+- Network Information API jika tersedia
+- Informasi browser/perangkat yang memang diekspos browser
+- Rekomendasi otomatis berdasarkan hasil ukur
+- Riwayat lokal opsional
+- Copy summary dan Export JSON
+- Dark/light mode
+- PWA + service worker
+- Animasi gauge, progress, sparklines, ambient network canvas, dan responsive mobile layout
+- Tombol pembatalan pengujian
 
-## Batasan penting browser
+## Permission preflight
 
-Website biasa **tidak dapat** membaca informasi sensitif Wi‑Fi seperti:
+Sebelum Full Test atau Quick Check, aplikasi menampilkan preflight yang menjelaskan data dan trafik yang akan digunakan.
 
-- SSID
-- BSSID / MAC address router
-- password Wi‑Fi
-- Wi‑Fi channel
-- RSSI / signal strength dalam dBm
-- daftar seluruh perangkat di LAN
-- DNS server aktual yang dikonfigurasi di perangkat/router
+Lokasi presisi hanya diminta melalui prompt resmi browser/OS menggunakan `navigator.geolocation.getCurrentPosition()` dengan high-accuracy mode. Pengguna dapat memilih **Tanpa lokasi** dan pengujian jaringan tetap berjalan.
 
-Browser modern sengaja tidak mengekspos data tersebut demi keamanan dan privasi. Website ini tidak memalsukan data tersebut. Informasi koneksi tambahan akan tampil hanya jika browser menyediakan `Network Information API`.
+Koordinat latitude/longitude presisi tidak disimpan dalam riwayat lokal dan tidak dimasukkan ke Export JSON. Riwayat hanya menyimpan status permission dan nilai akurasi lokasi bila tersedia.
 
-## Mesin speed test
+## Prinsip: tidak ada data dummy
 
-Tes bandwidth dan latency menggunakan endpoint edge Cloudflare (`speed.cloudflare.com`). DNS diagnostic menguji resolver DNS-over-HTTPS Cloudflare dan Google. Hasil dapat berbeda dari aplikasi native karena browser, device load, VPN, proxy, Wi‑Fi contention, TCP/TLS warm-up, dan kebijakan jaringan.
+Angka speed, latency, jitter, DNS timing, dan loaded latency berasal dari request jaringan aktual. Jika suatu API dibatasi browser atau request gagal, UI menampilkan tidak tersedia/gagal daripada membuat nilai palsu.
 
-Full Test dapat menggunakan puluhan MB data.
+`Network Information API` tidak tersedia di semua browser. Website biasa juga tidak dapat membaca data sensitif Wi-Fi berikut secara portabel:
+
+- password Wi-Fi
+- BSSID / MAC router
+- Wi-Fi channel
+- RSSI / signal strength dBm
+- daftar perangkat LAN
+- DNS server aktual yang dikonfigurasi router/perangkat
+
+Aplikasi tidak mengarang data tersebut.
+
+## Mesin pengukuran
+
+Bandwidth dan latency memakai endpoint Cloudflare Speedtest:
+
+- `https://speed.cloudflare.com/__down`
+- `https://speed.cloudflare.com/__up`
+
+Full Test menggunakan warm-up dan payload adaptif, beberapa sampel per arah, percentile bandwidth, latency sampling, dan loaded-latency probes. Hasil speed test browser tetap dapat dipengaruhi device load, VPN/proxy, Wi-Fi contention, browser scheduling, dan kondisi ISP.
+
+Full Test dapat menggunakan sekitar 100 MB data pada koneksi cepat; preflight memperingatkan pengguna sebelum mulai. Quick Check menggunakan trafik jauh lebih kecil dan ditandai sebagai quick estimate, bukan pengganti Full Test.
+
+Packet-loss tidak ditampilkan sebagai angka palsu. Pengukuran packet loss yang benar membutuhkan infrastruktur UDP/WebRTC/TURN yang sesuai.
+
+## Validasi otomatis
+
+Workflow `.github/workflows/validate.yml` menjalankan:
+
+- `node --check app.js`
+- pemeriksaan seluruh DOM ID yang direferensikan JavaScript tersedia di `index.html`
+
+Workflow `.github/workflows/pages.yml` menangani deployment GitHub Pages dari branch `main`.
 
 ## Menjalankan lokal
-
-Karena fitur Service Worker dan beberapa Web API membutuhkan secure context, gunakan server lokal daripada membuka `index.html` langsung.
-
-Contoh:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Lalu buka `http://localhost:8080`.
+Untuk geolocation, gunakan HTTPS pada deployment produksi. `localhost` juga diperlakukan sebagai secure context oleh browser modern untuk development.
 
 ## GitHub Pages
 
-Workflow deployment tersedia di `.github/workflows/pages.yml`.
+Di repository, buka **Settings → Pages → Build and deployment → GitHub Actions**.
 
-Untuk aktivasi pertama kali:
-
-1. Buka repository **Settings**.
-2. Masuk ke **Pages**.
-3. Pada **Build and deployment**, pilih **GitHub Actions** sebagai source.
-4. Jalankan ulang workflow **Deploy WiFi Checker to GitHub Pages** bila run pertama terjadi sebelum Pages diaktifkan.
-
-Setelah aktif, website normalnya tersedia di:
+Setelah GitHub Pages aktif, alamat situs:
 
 `https://drmacze.github.io/wifichecker/`
 
@@ -85,8 +95,5 @@ icon.svg
 sw.js
 .nojekyll
 .github/workflows/pages.yml
+.github/workflows/validate.yml
 ```
-
-## Privasi
-
-Riwayat pengujian disimpan lokal pada browser pengguna. Untuk menjalankan tes, browser tetap membuat request jaringan ke endpoint speed test / IP metadata / DNS diagnostics yang digunakan aplikasi.
