@@ -15,7 +15,7 @@ function waitForGauge(){
 }
 function prettyScale(v,kind){
   const baseline=kind==='upload'?100:200;
-  const tiers=[100,200,300,500,750,1000,1500,2000,2500,5000,10000];
+  const tiers=[50,100,200,300,500,750,1000,1500,2000,2500,5000,10000];
   const wanted=Math.max(baseline,v*1.14);
   return tiers.find(x=>x>=wanted)||Math.ceil(wanted/5000)*5000;
 }
@@ -32,8 +32,7 @@ function writeLiveReadout(kind,raw){
 }
 
 waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
-  oldNeedle.style.opacity='0';
-  oldProgress.style.opacity='0';
+  oldNeedle.style.opacity='0';oldProgress.style.opacity='0';
   const progress=oldProgress.cloneNode(true);progress.id='flowGaugeProgress';progress.classList.add('flow-gauge-progress');progress.style.opacity='1';oldProgress.after(progress);
   const needle=oldNeedle.cloneNode(true);needle.id='flowGaugeNeedle';needle.classList.add('flow-gauge-needle');needle.style.opacity='1';oldNeedle.after(needle);
 
@@ -47,90 +46,43 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
   const state={angle:135,targetAngle:135,raw:0,targetRaw:0,max:200,kind:'idle',label:'SPEED TEST',last:performance.now()};
   const valueEl=q('#gaugeValue'),unitEl=q('#gaugeUnit'),labelEl=q('#gaugeLabel');
 
-  function setScale(){
-    const half=displayValue(state.max/2),full=displayValue(state.max);
-    const mid=q('#gaugeMid'),max=q('#gaugeMax');if(mid)mid.textContent=String(Number(half.v.toFixed(half.d)));if(max)max.textContent=`${Number(full.v.toFixed(full.d))} ${full.u}`;
-  }
+  function setScale(){const half=displayValue(state.max/2),full=displayValue(state.max);const mid=q('#gaugeMid'),max=q('#gaugeMax');if(mid)mid.textContent=String(Number(half.v.toFixed(half.d)));if(max)max.textContent=`${Number(full.v.toFixed(full.d))} ${full.u}`}
   function setTarget(raw,kind,label){
     if(!Number.isFinite(raw))return;
-    if(kind!==state.kind){state.kind=kind;state.max=kind==='upload'?100:200;state.targetRaw=0;state.targetAngle=135;}
-    state.max=Math.max(state.max,prettyScale(raw,kind));state.targetRaw=raw;state.targetAngle=135+clamp(raw/state.max,0,1)*270;state.label=label||kind.toUpperCase();setScale();
+    if(kind!==state.kind){state.kind=kind;state.max=kind==='upload'?100:200;state.targetRaw=0;state.targetAngle=135}
+    state.max=Math.max(state.max,prettyScale(raw,kind));state.targetRaw=raw;state.targetAngle=135+clamp(raw/state.max,0,1)*270;state.label=label||kind.toUpperCase();gauge.dataset.metric=kind;setScale();
   }
   function frame(now){
     const dt=Math.min(50,now-state.last);state.last=now;
-    const response=reduced?1:1-Math.exp(-dt/145);
-    const numberResponse=reduced?1:1-Math.exp(-dt/115);
+    const response=reduced?1:1-Math.exp(-dt/175),numberResponse=reduced?1:1-Math.exp(-dt/135);
     state.angle+=(state.targetAngle-state.angle)*response;state.raw+=(state.targetRaw-state.raw)*numberResponse;
     needle.setAttribute('transform',`rotate(${state.angle.toFixed(3)} 160 160)`);
-    const ratio=clamp((state.angle-135)/270,0,1);progress.style.strokeDashoffset=String(100-ratio*100);
+    progress.style.strokeDashoffset=String(100-clamp((state.angle-135)/270,0,1)*100);
     const shown=displayValue(Math.max(0,state.raw));if(valueEl)valueEl.textContent=shown.v.toFixed(shown.d);if(unitEl)unitEl.textContent=shown.u;if(labelEl)labelEl.textContent=state.label;
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
-  function setStep(phase,status){
-    q('.phase-steps')?.querySelectorAll('span').forEach(el=>{
-      const same=el.dataset.phase===phase;
-      if(same&&status==='running'){el.classList.add('active');el.classList.remove('done')}
-      if(same&&status==='result'){el.classList.remove('active');el.classList.add('done')}
-    });
-  }
-  function showTransition(label,value,meta,tone='neutral'){
-    const box=q('.phase-transition');if(!box)return;
-    box.classList.remove('show','tone-green','tone-yellow','tone-orange','tone-red');void box.offsetWidth;
-    if(tone!=='neutral')box.classList.add(`tone-${tone}`);
-    q('#phaseTransitionLabel').textContent=label;q('#phaseTransitionValue').textContent=value;q('#phaseTransitionMeta').textContent=meta||'';box.classList.add('show');
-  }
-  function latencyTone(v){return v<=30?'green':v<=60?'yellow':v<=100?'orange':'red'}
-  function speedTone(v,kind){if(kind==='upload')return v>=20?'green':v>=10?'yellow':v>=3?'orange':'red';return v>=50?'green':v>=25?'yellow':v>=10?'orange':'red'}
+  function setStep(phase,status){q('.phase-steps')?.querySelectorAll('span').forEach(el=>{const same=el.dataset.phase===phase;if(same&&status==='running'){el.classList.add('active');el.classList.remove('done')}if(same&&status==='result'){el.classList.remove('active');el.classList.add('done')}})}
+  function showTransition(label,value,meta,tone='neutral'){const box=q('.phase-transition');if(!box)return;box.classList.remove('show','tone-green','tone-yellow','tone-orange','tone-red');void box.offsetWidth;if(tone!=='neutral')box.classList.add(`tone-${tone}`);q('#phaseTransitionLabel').textContent=label;q('#phaseTransitionValue').textContent=value;q('#phaseTransitionMeta').textContent=meta||'';box.classList.add('show')}
+  function latencyTone(v){return v<=25?'green':v<=50?'yellow':v<=100?'orange':'red'}
+  function speedTone(v,kind){return kind==='upload'?(v>=20?'green':v>=10?'yellow':v>=3?'orange':'red'):(v>=50?'green':v>=25?'yellow':v>=10?'orange':'red')}
 
   window.addEventListener('wifi-test-phase',e=>{
-    const d=e.detail||{};if(!d.phase)return;
-    setStep(d.phase,d.status);
-    if(d.status==='running'){
-      const names={ping:'PING',download:'DOWNLOAD',upload:'UPLOAD'};
-      showTransition(names[d.phase]||'MENGUKUR','Sedang mengukur…',d.phase==='ping'?'Mengambil beberapa sampel latency nyata.':'Meter mengikuti setiap sampel transfer secara kontinu.');
-    }
-    if(d.status==='sample'&&Number.isFinite(Number(d.value))){
-      setTarget(Number(d.value),d.phase,d.phase.toUpperCase());
-      if(d.phase==='download'||d.phase==='upload')writeLiveReadout(d.phase,Number(d.value));
-    }
+    const d=e.detail||{};if(!d.phase)return;setStep(d.phase,d.status);
+    if(d.status==='running'){const names={ping:'PING',download:'DOWNLOAD',upload:'UPLOAD'};showTransition(names[d.phase]||'MENGUKUR','Sedang mengukur…',d.phase==='ping'?'Latency: semakin rendah semakin baik.':'Speed: semakin tinggi semakin baik.')}
+    if(d.status==='sample'&&Number.isFinite(Number(d.value))){if(d.phase==='download'||d.phase==='upload'){setTarget(Number(d.value),d.phase,d.phase.toUpperCase());writeLiveReadout(d.phase,Number(d.value))}}
     if(d.status==='result'){
-      if(d.phase==='ping'){
-        const ping=Number(d.value);const el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`;
-        showTransition('PING SELESAI',`${ping.toFixed(1)} ms`,'Latency idle sudah terkunci. Berikutnya mengukur download.',latencyTone(ping));
-      }else{
-        const speed=Number(d.value);writeLiveReadout(d.phase,speed);setTarget(speed,d.phase,`${d.phase.toUpperCase()} HASIL`);
-        showTransition(`${d.phase.toUpperCase()} SELESAI`,`${speed.toFixed(1)} Mbps`,d.message||'Hasil fase dikunci sebelum lanjut.',speedTone(speed,d.phase));
-      }
+      if(d.phase==='ping'){const ping=Number(d.value);const el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`;showTransition('PING SELESAI',`${ping.toFixed(1)} ms`,'Semakin rendah semakin baik. Berikutnya mengukur download.',latencyTone(ping))}
+      else{const speed=Number(d.value);writeLiveReadout(d.phase,speed);setTarget(speed,d.phase,`${d.phase.toUpperCase()} HASIL`);showTransition(`${d.phase.toUpperCase()} SELESAI`,`${speed.toFixed(1)} Mbps`,'Semakin tinggi semakin baik.',speedTone(speed,d.phase))}
     }
   });
 
   const legacyLabel=q('#dialLabel'),legacyValue=q('#dialValue');
-  function syncLegacy(){
-    const label=(legacyLabel?.textContent||'').toUpperCase(),raw=parseFloat(legacyValue?.textContent);if(!Number.isFinite(raw))return;
-    if(label.includes('LIVE DOWNLOAD'))setTarget(raw,'download','DOWNLOAD');
-    if(label.includes('LIVE UPLOAD'))setTarget(raw,'upload','UPLOAD');
-  }
+  function syncLegacy(){const label=(legacyLabel?.textContent||'').toUpperCase(),raw=parseFloat(legacyValue?.textContent);if(!Number.isFinite(raw))return;if(label.includes('LIVE DOWNLOAD'))setTarget(raw,'download','DOWNLOAD');if(label.includes('LIVE UPLOAD'))setTarget(raw,'upload','UPLOAD')}
   [legacyLabel,legacyValue].filter(Boolean).forEach(el=>new MutationObserver(syncLegacy).observe(el,{childList:true,characterData:true,subtree:true}));
 
-  const stage=q('#testStage');
-  if(stage)new MutationObserver(()=>{
-    const text=stage.textContent.toLowerCase();
-    if(text.includes('loaded latency'))showTransition('ANALISIS JARINGAN','Mengukur loaded latency…','Speed test utama selesai, sekarang memeriksa respons koneksi saat dibebani.');
-    else if(text.includes('dns'))showTransition('DNS CHECK','Menguji resolver…','Tahap akhir diagnostik sebelum hasil dikunci.');
-  }).observe(stage,{childList:true,characterData:true,subtree:true});
-
-  const engine=q('#engineState');
-  if(engine)new MutationObserver(()=>{
-    const s=engine.textContent.trim().toUpperCase();
-    if(s==='RUNNING')q('.phase-steps')?.querySelectorAll('span').forEach(el=>el.classList.remove('done','active'));
-    if(s==='COMPLETE'){
-      q('.phase-steps')?.querySelectorAll('span').forEach(el=>{el.classList.remove('active');el.classList.add('done')});
-      const down=parseFloat(q('#downloadValue')?.textContent);if(Number.isFinite(down))setTarget(down,'download','HASIL DOWNLOAD');
-      showTransition('TES SELESAI','Semua pengukuran selesai','Ping, download, upload, loaded latency, dan DNS telah diproses.','green');
-    }
-  }).observe(engine,{childList:true,characterData:true,subtree:true});
-
+  const stage=q('#testStage');if(stage)new MutationObserver(()=>{const text=stage.textContent.toLowerCase();if(text.includes('loaded latency'))showTransition('ANALISIS JARINGAN','Mengukur loaded latency…','Latency tambahan saat koneksi sibuk: semakin rendah semakin baik.');else if(text.includes('dns'))showTransition('DNS CHECK','Menguji resolver…','Tahap akhir diagnostik sebelum hasil dikunci.')}).observe(stage,{childList:true,characterData:true,subtree:true});
+  const engine=q('#engineState');if(engine)new MutationObserver(()=>{const s=engine.textContent.trim().toUpperCase();if(s==='RUNNING')q('.phase-steps')?.querySelectorAll('span').forEach(el=>el.classList.remove('done','active'));if(s==='COMPLETE'){q('.phase-steps')?.querySelectorAll('span').forEach(el=>{el.classList.remove('active');el.classList.add('done')});const down=parseFloat(q('#downloadValue')?.textContent);if(Number.isFinite(down))setTarget(down,'download','HASIL DOWNLOAD');showTransition('TES SELESAI','Semua pengukuran selesai','Hasil final sudah dikunci dan dianalisis.','green')}}).observe(engine,{childList:true,characterData:true,subtree:true});
   q('#speedUnitSelect')?.addEventListener('change',setScale);
 }).catch(()=>{});
