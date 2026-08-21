@@ -1,6 +1,7 @@
+@import url('./quality.css');
 html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!important}.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}.lenis.lenis-stopped{overflow:clip}
 .topbar{transition:background .2s,border-color .2s}.topbar.motion-scrolled{background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 svg.lucide{display:block;width:1em;height:1em;stroke-width:1.8}.ghost-icon svg{width:17px;height:17px}.cta-icon svg{width:17px;height:17px}.dock-tab svg{width:14px;height:14px}
-:where(button,a,input,select):focus-visible{outline:2px solid var(--acid)!important;outline-offset:2px}
+:where(button,a,input,select):focus-visible{outline:2px solid var(--ink)!important;outline-offset:2px}
 .modal-card{will-change:transform,opacity}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
