@@ -1,4 +1,4 @@
-const CACHE = 'wifi-checker-pro-v5-motion';
+const CACHE = 'wifi-checker-pro-v6-signal-os';
 const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './app.js', './motion.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
