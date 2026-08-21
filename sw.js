@@ -1,5 +1,5 @@
-const CACHE = 'wifi-checker-pro-v8-speedtest-isp';
-const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './workspace.css', './speedtest.css', './app.js', './motion.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'wifi-checker-pro-v9-clean-gauge';
+const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './workspace.css', './app.js', './motion.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
