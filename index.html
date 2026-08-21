@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07111f" />
+  <meta name="description" content="WiFi Checker Pro — cek kecepatan, ping, jitter, IP, ISP, DNS, dan kualitas koneksi langsung dari browser." />
+  <title>WiFi Checker Pro</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <header class="site-header shell">
+    <a class="brand" href="#top" aria-label="WiFi Checker Pro">
+      <span class="brand-mark" aria-hidden="true">⌁</span>
+      <span><strong>WiFi</strong> Checker <em>PRO</em></span>
+    </a>
+    <div class="header-actions">
+      <span id="onlineBadge" class="badge"><i></i><span>Memeriksa…</span></span>
+      <button id="themeBtn" class="icon-btn" type="button" aria-label="Ganti tema">◐</button>
+    </div>
+  </header>
+
+  <main id="top" class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">NETWORK DIAGNOSTICS</span>
+        <h1>Kenali kualitas jaringanmu, <span>tanpa tebak-tebakan.</span></h1>
+        <p>Ukur download, upload, ping, jitter, identitas jaringan, DNS, dan kemampuan koneksi browser dalam satu dashboard.</p>
+        <div class="hero-actions">
+          <button id="runTestBtn" class="primary-btn" type="button"><span class="btn-icon">▶</span><span>Mulai Full Test</span></button>
+          <button id="quickCheckBtn" class="secondary-btn" type="button">Quick Check</button>
+        </div>
+        <p class="microcopy">Tes bandwidth menggunakan server edge Cloudflare dan dapat memakai puluhan MB data.</p>
+      </div>
+
+      <div class="score-card glass">
+        <div class="score-ring" id="scoreRing" style="--score:0">
+          <div class="score-inner">
+            <strong id="scoreValue">—</strong>
+            <span>/ 100</span>
+          </div>
+        </div>
+        <div class="score-copy">
+          <span class="label">NETWORK SCORE</span>
+          <h2 id="scoreLabel">Belum diuji</h2>
+          <p id="scoreHint">Jalankan Full Test untuk mendapatkan skor kualitas koneksi.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-heading">
+      <div><span class="eyebrow">LIVE CONNECTION</span><h2>Kondisi koneksi saat ini</h2></div>
+      <span id="lastUpdated" class="muted">Belum diperbarui</span>
+    </section>
+
+    <section class="stats-grid">
+      <article class="metric-card glass"><div class="metric-icon">↓</div><div><span>Download</span><strong><b id="downloadValue">—</b> <small>Mbps</small></strong><p id="downloadGrade">Belum diuji</p></div></article>
+      <article class="metric-card glass"><div class="metric-icon">↑</div><div><span>Upload</span><strong><b id="uploadValue">—</b> <small>Mbps</small></strong><p id="uploadGrade">Belum diuji</p></div></article>
+      <article class="metric-card glass"><div class="metric-icon">↔</div><div><span>Ping</span><strong><b id="pingValue">—</b> <small>ms</small></strong><p id="pingGrade">Belum diuji</p></div></article>
+      <article class="metric-card glass"><div class="metric-icon">≈</div><div><span>Jitter</span><strong><b id="jitterValue">—</b> <small>ms</small></strong><p id="jitterGrade">Belum diuji</p></div></article>
+    </section>
+
+    <section class="test-panel glass">
+      <div class="test-panel-head">
+        <div><span class="label">TEST ENGINE</span><h3 id="testStage">Siap menjalankan tes</h3></div>
+        <strong id="testPercent">0%</strong>
+      </div>
+      <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+      <p id="testMessage" class="muted">Tekan “Mulai Full Test” untuk mengukur koneksi.</p>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel glass">
+        <div class="panel-title"><div><span class="eyebrow">CONNECTION</span><h2>Detail koneksi</h2></div><span class="panel-icon">⌁</span></div>
+        <dl class="info-list">
+          <div><dt>Status</dt><dd id="connectionStatus">—</dd></div>
+          <div><dt>Tipe koneksi</dt><dd id="connectionType">—</dd></div>
+          <div><dt>Effective type</dt><dd id="effectiveType">—</dd></div>
+          <div><dt>Estimasi downlink</dt><dd id="estimatedDownlink">—</dd></div>
+          <div><dt>Estimasi RTT</dt><dd id="estimatedRtt">—</dd></div>
+          <div><dt>Data Saver</dt><dd id="saveData">—</dd></div>
+        </dl>
+        <div class="notice"><strong>Catatan browser</strong><p>SSID, BSSID/MAC router, password, channel, RSSI/signal dBm, dan daftar perangkat LAN tidak diekspos oleh browser web modern demi privasi dan keamanan.</p></div>
+      </article>
+
+      <article class="panel glass">
+        <div class="panel-title"><div><span class="eyebrow">IDENTITY</span><h2>Internet & IP</h2></div><span class="panel-icon">◎</span></div>
+        <dl class="info-list">
+          <div><dt>Public IP</dt><dd id="publicIp">Memuat…</dd></div>
+          <div><dt>ISP / Organization</dt><dd id="isp">Memuat…</dd></div>
+          <div><dt>ASN</dt><dd id="asn">—</dd></div>
+          <div><dt>Cloudflare Edge</dt><dd id="colo">—</dd></div>
+          <div><dt>Lokasi perkiraan</dt><dd id="networkLocation">—</dd></div>
+          <div><dt>Protocol</dt><dd id="protocol">—</dd></div>
+        </dl>
+        <p class="privacy-note">Lokasi berasal dari perkiraan IP, bukan GPS perangkat.</p>
+      </article>
+
+      <article class="panel glass">
+        <div class="panel-title"><div><span class="eyebrow">DNS</span><h2>DNS diagnostics</h2></div><button id="dnsBtn" class="mini-btn" type="button">Tes ulang</button></div>
+        <div class="dns-row"><div><strong>Cloudflare DNS</strong><span>1.1.1.1 / DoH</span></div><b id="cloudflareDns" class="status-pill neutral">Belum dites</b></div>
+        <div class="dns-row"><div><strong>Google Public DNS</strong><span>8.8.8.8 / DoH</span></div><b id="googleDns" class="status-pill neutral">Belum dites</b></div>
+        <div class="dns-row"><div><strong>DNS tercepat</strong><span>Dari resolver yang dapat dijangkau</span></div><b id="fastestDns">—</b></div>
+        <div class="notice compact"><p>Tes ini mengukur akses ke resolver DNS-over-HTTPS publik. Browser tidak dapat membaca DNS server yang sedang dikonfigurasi router/perangkat.</p></div>
+      </article>
+
+      <article class="panel glass">
+        <div class="panel-title"><div><span class="eyebrow">DEVICE</span><h2>Browser & perangkat</h2></div><span class="panel-icon">▣</span></div>
+        <dl class="info-list">
+          <div><dt>Browser engine</dt><dd id="browserName">—</dd></div>
+          <div><dt>Platform</dt><dd id="platform">—</dd></div>
+          <div><dt>CPU threads</dt><dd id="cpuCores">—</dd></div>
+          <div><dt>Device memory</dt><dd id="deviceMemory">—</dd></div>
+          <div><dt>Screen</dt><dd id="screenInfo">—</dd></div>
+          <div><dt>Secure context</dt><dd id="secureContext">—</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <section class="section-heading"><div><span class="eyebrow">HEALTH CHECK</span><h2>Diagnostik otomatis</h2></div></section>
+    <section id="diagnostics" class="diagnostics-grid">
+      <article class="diag glass" data-diag="internet"><span class="diag-dot"></span><div><strong>Koneksi internet</strong><p>Memeriksa status online browser.</p></div><b>—</b></article>
+      <article class="diag glass" data-diag="https"><span class="diag-dot"></span><div><strong>HTTPS / keamanan</strong><p>Diperlukan untuk fitur web modern.</p></div><b>—</b></article>
+      <article class="diag glass" data-diag="speed"><span class="diag-dot"></span><div><strong>Speed endpoint</strong><p>Koneksi ke edge server pengujian.</p></div><b>—</b></article>
+      <article class="diag glass" data-diag="network-api"><span class="diag-dot"></span><div><strong>Network Information API</strong><p>Detail koneksi dari browser.</p></div><b>—</b></article>
+    </section>
+
+    <section class="results-layout">
+      <article class="panel glass recommendations">
+        <div class="panel-title"><div><span class="eyebrow">SMART TIPS</span><h2>Rekomendasi</h2></div><span class="panel-icon">✦</span></div>
+        <div id="recommendations" class="tips-list"><p class="empty-state">Rekomendasi akan muncul setelah Full Test selesai.</p></div>
+      </article>
+
+      <article class="panel glass history-panel">
+        <div class="panel-title"><div><span class="eyebrow">LOCAL HISTORY</span><h2>Riwayat tes</h2></div><button id="clearHistoryBtn" class="text-btn" type="button">Hapus</button></div>
+        <div id="historyList" class="history-list"><p class="empty-state">Belum ada riwayat tes di perangkat ini.</p></div>
+      </article>
+    </section>
+
+    <section class="export-bar glass">
+      <div><span class="eyebrow">SHARE RESULT</span><h2>Simpan hasil diagnostik</h2><p>Data hasil tes disimpan lokal di browser kecuali permintaan tes ke layanan jaringan.</p></div>
+      <div class="export-actions"><button id="copyBtn" class="secondary-btn" type="button">Salin ringkasan</button><button id="exportBtn" class="primary-btn small" type="button">Export JSON</button></div>
+    </section>
+  </main>
+
+  <footer class="shell footer"><span>WiFi Checker Pro</span><span>Browser-based network diagnostics</span></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
