@@ -2,9 +2,9 @@
 .meter-card{background:radial-gradient(circle at 50% 42%,rgba(126,231,231,.065),transparent 35%),linear-gradient(180deg,var(--surface),var(--bg-2));border-color:var(--line-2)}
 .meter-card .instrument-top{z-index:8}
 .meter-card .dial-wrap{position:relative;isolation:isolate}
-.meter-card .speed-dial{background:conic-gradient(from 215deg,rgba(126,231,231,.06) 0deg,var(--cyan) calc(var(--meter)*.55),var(--acid) var(--meter),rgba(255,255,255,.055) var(--meter) 290deg,transparent 290deg 360deg);box-shadow:0 0 0 1px rgba(255,255,255,.03),0 34px 80px rgba(0,0,0,.36);filter:none}
+.meter-card .speed-dial{background:conic-gradient(from 215deg,rgba(126,231,231,.06) 0deg,var(--cyan) 2deg,var(--acid) var(--meter),rgba(255,255,255,.055) var(--meter) 290deg,transparent 290deg 360deg);box-shadow:0 0 0 1px rgba(255,255,255,.03),0 34px 80px rgba(0,0,0,.36);filter:none}
 .meter-card .speed-dial:before{inset:18px;background:radial-gradient(circle at 50% 40%,var(--surface-2),var(--bg) 72%);border:1px solid rgba(255,255,255,.055);box-shadow:inset 0 0 45px rgba(0,0,0,.28)}
-.meter-card .dial-grid{inset:29px;opacity:.42;background:repeating-conic-gradient(from 215deg,rgba(243,240,231,.58) 0 1deg,transparent 1deg 8deg);mask:radial-gradient(circle,transparent 70%,#000 71%)}
+.meter-card .dial-grid{inset:29px;opacity:.42;background:repeating-conic-gradient(from 215deg,rgba(243,240,231,.58) 0 1deg,transparent 1deg 8deg);mask:radial-gradient(circle,transparent 70%,#000 71%);-webkit-mask:radial-gradient(circle,transparent 70%,#000 71%)}
 .meter-card .dial-center{margin-top:0}
 .meter-card .dial-center span{font:850 8px/1 var(--mono);letter-spacing:.18em;color:var(--muted)}
 .meter-card .dial-center strong{font-weight:620;letter-spacing:-.075em;font-variant-numeric:tabular-nums}
