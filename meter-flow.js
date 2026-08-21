@@ -1,7 +1,6 @@
 const q=(s)=>document.querySelector(s);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let unit='Mbps';
 
 function waitForGauge(){
   return new Promise(resolve=>{
@@ -21,11 +20,15 @@ function prettyScale(v,kind){
   return tiers.find(x=>x>=wanted)||Math.ceil(wanted/5000)*5000;
 }
 function displayValue(mbps){
-  const select=q('#speedUnitSelect');const mode=select?.value||'auto';
+  const mode=q('#speedUnitSelect')?.value||'auto';
   if(mode==='gbps'||(mode==='auto'&&mbps>=1000))return{v:mbps/1000,u:'Gbps',d:2};
   if(mode==='kbps'||(mode==='auto'&&mbps<1))return{v:mbps*1000,u:'Kbps',d:mbps<.1?1:0};
   if(mode==='MBps')return{v:mbps/8,u:'MB/s',d:2};
   return{v:mbps,u:'Mbps',d:mbps>=100?0:1};
+}
+function writeLiveReadout(kind,raw){
+  const c=displayValue(raw);const el=q(kind==='download'?'#meterDown':'#meterUp');
+  if(el)el.innerHTML=`${c.v.toFixed(c.d)} <small>${c.u}</small>`;
 }
 
 waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
@@ -36,7 +39,7 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
 
   const card=q('.meter-card');
   const steps=document.createElement('div');steps.className='phase-steps';steps.innerHTML='<span data-phase="ping"><i></i>Ping</span><span data-phase="download"><i></i>Download</span><span data-phase="upload"><i></i>Upload</span>';
-  const top=card?.querySelector('.instrument-top');top?.after(steps);
+  card?.querySelector('.instrument-top')?.after(steps);
 
   const transition=document.createElement('div');transition.className='phase-transition';transition.innerHTML='<span id="phaseTransitionLabel">SIAP</span><strong id="phaseTransitionValue">Tekan GO untuk mulai</strong><small id="phaseTransitionMeta">Pengukuran menggunakan traffic nyata ke Cloudflare edge.</small>';
   const readouts=q('.meter-readouts');if(readouts)readouts.before(transition);else card?.append(transition);
@@ -74,8 +77,7 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
   }
   function showTransition(label,value,meta,tone='neutral'){
     const box=q('.phase-transition');if(!box)return;
-    box.classList.remove('show','tone-green','tone-yellow','tone-orange','tone-red');
-    void box.offsetWidth;
+    box.classList.remove('show','tone-green','tone-yellow','tone-orange','tone-red');void box.offsetWidth;
     if(tone!=='neutral')box.classList.add(`tone-${tone}`);
     q('#phaseTransitionLabel').textContent=label;q('#phaseTransitionValue').textContent=value;q('#phaseTransitionMeta').textContent=meta||'';box.classList.add('show');
   }
@@ -89,11 +91,19 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
       const names={ping:'PING',download:'DOWNLOAD',upload:'UPLOAD'};
       showTransition(names[d.phase]||'MENGUKUR','Sedang mengukur…',d.phase==='ping'?'Mengambil beberapa sampel latency nyata.':'Meter mengikuti setiap sampel transfer secara kontinu.');
     }
-    if(d.status==='result'){
-      if(d.phase==='ping')showTransition('PING SELESAI',`${Number(d.value).toFixed(1)} ms`,'Latency idle sudah terkunci. Berikutnya mengukur download.',latencyTone(Number(d.value)));
-      else showTransition(`${d.phase.toUpperCase()} SELESAI`,`${Number(d.value).toFixed(1)} Mbps`,d.message||'Hasil fase dikunci sebelum lanjut.',speedTone(Number(d.value),d.phase));
+    if(d.status==='sample'&&Number.isFinite(Number(d.value))){
+      setTarget(Number(d.value),d.phase,d.phase.toUpperCase());
+      if(d.phase==='download'||d.phase==='upload')writeLiveReadout(d.phase,Number(d.value));
     }
-    if(d.status==='sample'&&Number.isFinite(Number(d.value)))setTarget(Number(d.value),d.phase,d.phase.toUpperCase());
+    if(d.status==='result'){
+      if(d.phase==='ping'){
+        const ping=Number(d.value);const el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`;
+        showTransition('PING SELESAI',`${ping.toFixed(1)} ms`,'Latency idle sudah terkunci. Berikutnya mengukur download.',latencyTone(ping));
+      }else{
+        const speed=Number(d.value);writeLiveReadout(d.phase,speed);setTarget(speed,d.phase,`${d.phase.toUpperCase()} HASIL`);
+        showTransition(`${d.phase.toUpperCase()} SELESAI`,`${speed.toFixed(1)} Mbps`,d.message||'Hasil fase dikunci sebelum lanjut.',speedTone(speed,d.phase));
+      }
+    }
   });
 
   const legacyLabel=q('#dialLabel'),legacyValue=q('#dialValue');
@@ -104,10 +114,17 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
   }
   [legacyLabel,legacyValue].filter(Boolean).forEach(el=>new MutationObserver(syncLegacy).observe(el,{childList:true,characterData:true,subtree:true}));
 
+  const stage=q('#testStage');
+  if(stage)new MutationObserver(()=>{
+    const text=stage.textContent.toLowerCase();
+    if(text.includes('loaded latency'))showTransition('ANALISIS JARINGAN','Mengukur loaded latency…','Speed test utama selesai, sekarang memeriksa respons koneksi saat dibebani.');
+    else if(text.includes('dns'))showTransition('DNS CHECK','Menguji resolver…','Tahap akhir diagnostik sebelum hasil dikunci.');
+  }).observe(stage,{childList:true,characterData:true,subtree:true});
+
   const engine=q('#engineState');
   if(engine)new MutationObserver(()=>{
     const s=engine.textContent.trim().toUpperCase();
-    if(s==='RUNNING'){q('.phase-steps')?.querySelectorAll('span').forEach(el=>el.classList.remove('done','active'))}
+    if(s==='RUNNING')q('.phase-steps')?.querySelectorAll('span').forEach(el=>el.classList.remove('done','active'));
     if(s==='COMPLETE'){
       q('.phase-steps')?.querySelectorAll('span').forEach(el=>{el.classList.remove('active');el.classList.add('done')});
       const down=parseFloat(q('#downloadValue')?.textContent);if(Number.isFinite(down))setTarget(down,'download','HASIL DOWNLOAD');
@@ -115,5 +132,5 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
     }
   }).observe(engine,{childList:true,characterData:true,subtree:true});
 
-  q('#speedUnitSelect')?.addEventListener('change',()=>{setScale()});
+  q('#speedUnitSelect')?.addEventListener('change',setScale);
 }).catch(()=>{});
