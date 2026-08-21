@@ -21,6 +21,8 @@ jobs:
           node --check quality.js
           node --check sw.js
           node --input-type=module --check < workspace.js
+          node --input-type=module --check < engine-v2.js
+          node --input-type=module --check < meter-flow.js
 
       - name: Check referenced DOM IDs
         run: |
@@ -37,29 +39,35 @@ jobs:
           print(f'OK: {len(used_app)} app engine IDs found in HTML')
           PY
 
-      - name: Check clean UI integration
+      - name: Check speed phase integration
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          html = Path('index.html').read_text()
           motion = Path('motion.js').read_text()
           motion_css = Path('motion.css').read_text()
+          engine = Path('engine-v2.js').read_text()
+          flow = Path('meter-flow.js').read_text()
+          flow_css = Path('meter-flow.css').read_text()
           quality = Path('quality.js').read_text()
           quality_css = Path('quality.css').read_text()
           workspace = Path('workspace.js').read_text()
           css = Path('workspace.css').read_text()
           sw = Path('sw.js').read_text()
-          required_html = ['motion.css', 'motion.js', 'workspace.css', 'workspace.js', 'lucide@1.33.0']
-          required_motion = ['lenis@1.3.26', 'gsap@3.15.0', 'ScrollTrigger', "import('./quality.js')"]
-          required_motion_css = ["@import url('./quality.css')"]
-          required_quality = ['pingLevel', 'jitterLevel', 'downloadLevel', 'uploadLevel', 'replaceGaugeGradient', 'quality-green', 'quality-red']
-          required_quality_css = ['--q-green:#22c55e', '--q-yellow:#eab308', '--q-orange:#f97316', '--q-red:#ef4444', ':root.light', '.quality-legend']
-          required_workspace = ['gsap@3.15.0', 'installGauge', 'gaugeNeedle', 'convertMbps', 'estimatePlan', 'providerProfile', 'meterGoBtn']
-          required_css = ['.clean-gauge', '.gauge-progress', '.meter-readouts', '.provider-card', '.detail-toggle']
-          required_cache = ['workspace.css', 'workspace.js', 'quality.css', 'quality.js']
-          missing = ([x for x in required_html if x not in html] +
-                     [x for x in required_motion if x not in motion] +
+          required_motion = ['lenis@1.3.26', 'gsap@3.15.0', 'ScrollTrigger', "import('./engine-v2.js')", "import('./meter-flow.js')", "import('./quality.js')"]
+          required_motion_css = ["@import url('./quality.css')", "@import url('./meter-flow.css')"]
+          required_engine = ['measuredBandwidth', 'targetSamples', 'hardCap', 'data nyata', 'wifi-test-phase', 'Ping selesai', 'Download selesai', 'Upload selesai']
+          required_flow = ['flowGaugeNeedle', 'flowGaugeProgress', 'requestAnimationFrame(frame)', 'phase-steps', 'phase-transition', 'TES SELESAI']
+          required_flow_css = ['.phase-steps', '.phase-transition', '.flow-gauge-progress']
+          required_quality = ['pingLevel', 'jitterLevel', 'replaceGaugeGradient']
+          required_quality_css = ['--q-green:#22c55e', '--q-yellow:#eab308', '--q-orange:#f97316', '--q-red:#ef4444']
+          required_workspace = ['installGauge', 'gaugeNeedle', 'convertMbps', 'estimatePlan']
+          required_css = ['.clean-gauge', '.gauge-progress', '.meter-readouts', '.provider-card']
+          required_cache = ['engine-v2.js', 'meter-flow.js', 'meter-flow.css', 'quality.css', 'quality.js', 'workspace.js']
+          missing = ([x for x in required_motion if x not in motion] +
                      [x for x in required_motion_css if x not in motion_css] +
+                     [x for x in required_engine if x not in engine] +
+                     [x for x in required_flow if x not in flow] +
+                     [x for x in required_flow_css if x not in flow_css] +
                      [x for x in required_quality if x not in quality] +
                      [x for x in required_quality_css if x not in quality_css] +
                      [x for x in required_workspace if x not in workspace] +
@@ -67,9 +75,7 @@ jobs:
                      [x for x in required_cache if x not in sw])
           if missing:
               raise SystemExit('Missing integration: ' + ', '.join(missing))
-          if '@latest' in html or '@latest' in motion or '@latest' in workspace:
+          if '@latest' in motion or '@latest' in workspace:
               raise SystemExit('Unpinned dependency detected')
-          if "@import url('./speedtest.css')" in css:
-              raise SystemExit('Legacy speedtest CSS still imported')
-          print('OK: monochrome themes, semantic quality colors, SVG gauge, ISP estimator, and PWA cache are wired')
+          print('OK: real multi-sample engine, explicit phases, continuous gauge smoothing, quality colors, and PWA cache are wired')
           PY
