@@ -1,0 +1,34 @@
+/* Speedtest-inspired interaction layer — original Signal OS styling */
+.meter-card{background:radial-gradient(circle at 50% 42%,rgba(126,231,231,.065),transparent 35%),linear-gradient(180deg,var(--surface),var(--bg-2));border-color:var(--line-2)}
+.meter-card .instrument-top{z-index:8}
+.meter-card .dial-wrap{position:relative;isolation:isolate}
+.meter-card .speed-dial{background:conic-gradient(from 215deg,rgba(126,231,231,.06) 0deg,var(--cyan) calc(var(--meter)*.55),var(--acid) var(--meter),rgba(255,255,255,.055) var(--meter) 290deg,transparent 290deg 360deg);box-shadow:0 0 0 1px rgba(255,255,255,.03),0 34px 80px rgba(0,0,0,.36);filter:none}
+.meter-card .speed-dial:before{inset:18px;background:radial-gradient(circle at 50% 40%,var(--surface-2),var(--bg) 72%);border:1px solid rgba(255,255,255,.055);box-shadow:inset 0 0 45px rgba(0,0,0,.28)}
+.meter-card .dial-grid{inset:29px;opacity:.42;background:repeating-conic-gradient(from 215deg,rgba(243,240,231,.58) 0 1deg,transparent 1deg 8deg);mask:radial-gradient(circle,transparent 70%,#000 71%)}
+.meter-card .dial-center{margin-top:0}
+.meter-card .dial-center span{font:850 8px/1 var(--mono);letter-spacing:.18em;color:var(--muted)}
+.meter-card .dial-center strong{font-weight:620;letter-spacing:-.075em;font-variant-numeric:tabular-nums}
+.meter-card .dial-center small{display:block;margin-top:8px;color:var(--muted);font-size:11px}
+.meter-card .dial-needle{width:2px;height:104px;background:linear-gradient(var(--acid),rgba(199,255,94,.1) 60%,transparent);filter:drop-shadow(0 0 8px rgba(199,255,94,.45));opacity:.9}
+.meter-card .dial-hub{width:12px;height:12px;background:var(--acid);box-shadow:0 0 0 5px rgba(199,255,94,.1),0 0 22px rgba(199,255,94,.32)}
+.meter-card.testing .speed-dial{box-shadow:0 0 0 1px rgba(199,255,94,.12),0 34px 90px rgba(0,0,0,.42),0 0 70px rgba(126,231,231,.07)}
+.meter-card.testing .dial-hub{animation:testHubPulse 1.25s ease-in-out infinite}
+@keyframes testHubPulse{50%{box-shadow:0 0 0 11px rgba(199,255,94,.03),0 0 34px rgba(199,255,94,.48)}}
+.meter-scale{padding:0 10px;margin-top:-17px}.meter-scale span{min-width:60px}.meter-scale span:nth-child(2){text-align:center}.meter-scale span:last-child{text-align:right}
+.meter-go{position:absolute;z-index:10;inset:50% auto auto 50%;width:118px;height:118px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(199,255,94,.42);background:radial-gradient(circle at 40% 30%,rgba(199,255,94,.22),rgba(13,15,12,.98) 68%);color:var(--ink);display:grid;place-content:center;gap:5px;cursor:pointer;box-shadow:0 0 0 9px rgba(199,255,94,.035),0 18px 55px rgba(0,0,0,.42);transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.meter-go strong{font:760 36px/.9 var(--display);letter-spacing:-.065em}.meter-go span{font:800 7px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.meter-go:hover{transform:translate(-50%,-50%) scale(1.045);border-color:var(--acid);box-shadow:0 0 0 12px rgba(199,255,94,.045),0 22px 65px rgba(0,0,0,.48)}
+.meter-go[hidden]{display:none!important}
+.speed-triplet{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:8px}
+.speed-triplet>div{min-width:0;padding:11px 10px;border-right:1px solid var(--line)}.speed-triplet>div:last-child{border-right:0}
+.speed-triplet span{display:flex;align-items:center;justify-content:center;gap:5px;color:var(--muted);font:800 7px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase}.speed-triplet span svg{width:11px;height:11px}
+.speed-triplet b{display:block;text-align:center;margin-top:6px;font:690 15px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}.speed-triplet b small{font:750 8px var(--mono);color:var(--muted);letter-spacing:0}
+.provider-card{grid-column:1/-1;background:linear-gradient(135deg,rgba(199,255,94,.075),transparent 38%),var(--surface-2)!important;border-color:rgba(199,255,94,.18)!important;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(145px,.65fr);grid-template-areas:'head plan' 'stats plan' 'note note';gap:9px 16px}
+.provider-head{grid-area:head;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.provider-head h2{margin:3px 0 0;font-size:16px;letter-spacing:-.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.provider-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--line-2);color:var(--acid);background:var(--bg-2)}.provider-mark svg{width:17px;height:17px}
+.plan-hero{grid-area:plan;border:1px solid rgba(199,255,94,.2);background:var(--bg-2);border-radius:12px;padding:13px;display:grid;align-content:center;text-align:center;min-height:108px}.plan-hero span{font:850 7px var(--mono);letter-spacing:.15em;color:var(--muted)}.plan-hero strong{font-size:clamp(24px,2.6vw,38px);line-height:1;letter-spacing:-.06em;color:var(--acid);margin:7px 0 5px}.plan-hero small{font:750 8px/1.35 var(--mono);color:var(--muted)}
+.provider-stats{grid-area:stats;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.provider-stats>div{min-width:0;border-top:1px solid var(--line);padding-top:6px}.provider-stats span{display:block;color:var(--muted);font:760 7px var(--mono);letter-spacing:.06em;text-transform:uppercase}.provider-stats b{display:block;margin-top:3px;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plan-note{grid-area:note;margin:2px 0 0;padding-top:7px;border-top:1px dashed var(--line);color:var(--muted);font-size:8px;line-height:1.45}
+:root.light .meter-go{background:radial-gradient(circle at 40% 30%,rgba(93,141,0,.18),rgba(248,246,239,.98) 70%)}
+@media(max-width:1180px){.meter-go{width:104px;height:104px}.meter-go strong{font-size:32px}.speed-triplet>div{padding-inline:6px}.provider-card{grid-template-columns:1fr 145px}}
+@media(max-width:720px){.meter-go{width:96px;height:96px}.meter-go strong{font-size:29px}.speed-triplet b{font-size:13px}.provider-card{grid-template-columns:1fr;grid-template-areas:'head' 'plan' 'stats' 'note'}.plan-hero{min-height:92px}.provider-stats{grid-template-columns:1fr 1fr}.provider-head h2{white-space:normal}}
+@media(prefers-reduced-motion:reduce){.meter-card.testing .dial-hub{animation:none}.meter-go{transition:none}}
