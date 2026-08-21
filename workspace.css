@@ -1,3 +1,4 @@
+@import url('./speedtest.css');
 /* Compact Signal OS workspace */
 .workspace-shell{display:grid;gap:14px;padding-bottom:18px}
 .command-strip{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:28px;padding:14px 0 8px}
