@@ -20,8 +20,19 @@ Dashboard diagnostik jaringan berbasis browser dengan pengukuran nyata, consent-
 - Copy summary dan Export JSON
 - Dark/light mode
 - PWA + service worker
-- Animasi gauge, progress, sparklines, ambient network canvas, dan responsive mobile layout
 - Tombol pembatalan pengujian
+
+## Motion & visual stack
+
+UI memakai motion stack yang dipisahkan dari engine diagnostik agar animasi tidak mengganggu akurasi pengukuran jaringan:
+
+- **Lenis 1.3.26** — smooth scrolling dan anchor navigation
+- **GSAP 3.15.0** — timeline, micro-interactions, value transitions, magnetic controls, card tilt, dan instrument motion
+- **GSAP ScrollTrigger** — scroll reveal, parallax, progress indicator, dan header behavior
+- **Lucide 1.33.0** — sistem ikon SVG konsisten menggantikan simbol/emoji UI
+- `prefers-reduced-motion` dihormati untuk aksesibilitas
+
+Dependency front-end dipin ke versi eksplisit; CI menolak penggunaan `@latest` agar deploy tetap reproducible.
 
 ## Permission preflight
 
@@ -64,7 +75,10 @@ Packet-loss tidak ditampilkan sebagai angka palsu. Pengukuran packet loss yang b
 Workflow `.github/workflows/validate.yml` menjalankan:
 
 - `node --check app.js`
+- `node --check motion.js`
+- `node --check sw.js`
 - pemeriksaan seluruh DOM ID yang direferensikan JavaScript tersedia di `index.html`
+- pemeriksaan integrasi GSAP / Lenis / Lucide dan version pinning
 
 Workflow `.github/workflows/pages.yml` menangani deployment GitHub Pages dari branch `main`.
 
@@ -89,7 +103,9 @@ Setelah GitHub Pages aktif, alamat situs:
 ```text
 index.html
 styles.css
+motion.css
 app.js
+motion.js
 manifest.webmanifest
 icon.svg
 sw.js
