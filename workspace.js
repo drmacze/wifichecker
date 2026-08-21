@@ -7,6 +7,14 @@ const q=(s)=>document.querySelector(s);
 const qa=(s)=>[...document.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
+const meterStyle=document.createElement('style');
+meterStyle.textContent=`
+@property --meter{syntax:'<angle>';inherits:false;initial-value:0deg}
+@property --needle{syntax:'<angle>';inherits:false;initial-value:0deg}
+.speed-dial{transition:--meter .9s cubic-bezier(.16,1,.3,1),--needle .9s cubic-bezier(.16,1,.3,1)!important}
+`;
+document.head.append(meterStyle);
+
 function activatePanel(name,animate=true){
   const tabs=qa('[data-workspace-tab]');
   const panels=qa('[data-workspace-panel]');
@@ -34,21 +42,21 @@ unitSelect.value=unit;
 let rawDownload=NaN,rawUpload=NaN;
 
 function convertMbps(mbps,requested=unit){
-  if(!Number.isFinite(mbps))return{value:NaN,unit:requested==='auto'?'Mbps':requested==='MBps'?'MB/s':requested.toUpperCase(),digits:1};
+  if(!Number.isFinite(mbps))return{value:NaN,unit:requested==='auto'?'Mbps':requested==='MBps'?'MB/s':requested==='gbps'?'Gbps':requested==='kbps'?'Kbps':'Mbps',digits:1};
   let mode=requested;
-  if(mode==='auto') mode=mbps>=1000?'gbps':mbps>=1?'mbps':'kbps';
+  if(mode==='auto')mode=mbps>=1000?'gbps':mbps>=1?'mbps':'kbps';
   if(mode==='gbps')return{value:mbps/1000,unit:'Gbps',digits:mbps>=10000?1:2};
   if(mode==='kbps')return{value:mbps*1000,unit:'Kbps',digits:mbps<.1?1:0};
   if(mode==='MBps')return{value:mbps/8,unit:'MB/s',digits:2};
   return{value:mbps,unit:'Mbps',digits:mbps>=100?0:1};
 }
-function formatConverted(mbps,requested=unit){const c=convertMbps(mbps,requested);return Number.isFinite(c.value)?c.value.toFixed(c.digits):'—'}
 function paintBandwidth(source,display,unitEl){
   const raw=parseFloat(source.textContent);
   if(Number.isFinite(raw)){if(source===downloadSource)rawDownload=raw;else rawUpload=raw}
   const base=source===downloadSource?rawDownload:rawUpload;
   const c=convertMbps(base);
-  display.textContent=Number.isFinite(c.value)?c.value.toFixed(c.digits):'—';unitEl.textContent=c.unit;
+  display.textContent=Number.isFinite(c.value)?c.value.toFixed(c.digits):'—';
+  unitEl.textContent=c.unit;
 }
 function repaintBandwidth(){paintBandwidth(downloadSource,downloadDisplay,downloadUnit);paintBandwidth(uploadSource,uploadDisplay,uploadUnit)}
 new MutationObserver(()=>paintBandwidth(downloadSource,downloadDisplay,downloadUnit)).observe(downloadSource,{childList:true,characterData:true,subtree:true});
@@ -64,7 +72,7 @@ let lastMeter={value:NaN,label:'NETWORK SCORE',max:100,isBandwidth:false};
 function setScale(max,isBandwidth){
   if(!isBandwidth){meterScaleMid.textContent='50';meterScaleMax.textContent='100';return}
   const half=convertMbps(max/2),full=convertMbps(max);
-  meterScaleMid.textContent=`${Number(half.value.toFixed(half.digits))}`;
+  meterScaleMid.textContent=String(Number(half.value.toFixed(half.digits)));
   meterScaleMax.textContent=`${Number(full.value.toFixed(full.digits))} ${full.unit}`;
 }
 function smoothDial(value,label='NETWORK SCORE',incomingUnit='/ 100',incomingMax=100){
@@ -80,22 +88,29 @@ function smoothDial(value,label='NETWORK SCORE',incomingUnit='/ 100',incomingMax
   const converted=isBandwidth?convertMbps(raw):{value:raw,unit:incomingUnit,digits:raw>=100?0:1};
   unitEl.textContent=isBandwidth?converted.unit:incomingUnit;
   if(!finite)valueEl.textContent='—';
-  if(reduced||!gsap){meterState.deg=targetDeg;meterState.value=converted.value;dial.style.setProperty('--meter',`${targetDeg}deg`);dial.style.setProperty('--needle',`${targetDeg}deg`);if(finite)valueEl.textContent=converted.value.toFixed(converted.digits);return}
+  if(reduced||!gsap){
+    meterState.deg=targetDeg;meterState.value=converted.value;
+    dial.style.setProperty('--meter',`${targetDeg}deg`);dial.style.setProperty('--needle',`${targetDeg}deg`);
+    if(finite)valueEl.textContent=converted.value.toFixed(converted.digits);
+    return;
+  }
   gsap.killTweensOf(meterState);
-  const targetValue=converted.value;
-  gsap.to(meterState,{deg:targetDeg,value:targetValue,duration:.92,ease:'expo.out',onUpdate:()=>{
-    dial.style.setProperty('--meter',`${meterState.deg}deg`);dial.style.setProperty('--needle',`${meterState.deg}deg`);
+  gsap.to(meterState,{deg:targetDeg,value:converted.value,duration:.92,ease:'expo.out',onUpdate:()=>{
+    dial.style.setProperty('--meter',`${meterState.deg}deg`);
+    dial.style.setProperty('--needle',`${meterState.deg}deg`);
     if(finite)valueEl.textContent=meterState.value.toFixed(converted.digits);
   }});
 }
 
 if(typeof window.setDial==='function')window.setDial=smoothDial;
 
-function rerenderLiveMeter(){
-  if(!lastMeter.isBandwidth)return;
-  smoothDial(lastMeter.value,lastMeter.label,'Mbps',lastMeter.max);
-}
-unitSelect.addEventListener('change',()=>{unit=unitSelect.value;localStorage.setItem(UNIT_KEY,unit);repaintBandwidth();rerenderLiveMeter()});
+function rerenderLiveMeter(){if(lastMeter.isBandwidth)smoothDial(lastMeter.value,lastMeter.label,'Mbps',lastMeter.max)}
+unitSelect.addEventListener('change',()=>{
+  unit=unitSelect.value;
+  localStorage.setItem(UNIT_KEY,unit);
+  repaintBandwidth();
+  rerenderLiveMeter();
+});
 repaintBandwidth();
 
 const testMessage=q('#testMessage');
@@ -107,26 +122,4 @@ function rewriteStatusUnit(){
 new MutationObserver(rewriteStatusUnit).observe(testMessage,{childList:true,characterData:true,subtree:true});
 
 ['runTestBtn','quickCheckBtn'].forEach(id=>q('#'+id)?.addEventListener('click',()=>activatePanel('network',false)));
-
-// If the classic app captured its original global binding before this module loaded,
-// observe dial mutations and smooth the final visual state as a safety net.
-const dial=q('#speedDial');
-let lastObservedStyle='';
-new MutationObserver(()=>{
-  const label=q('#dialLabel').textContent;
-  const raw=parseFloat(q('#dialValue').textContent);
-  const style=dial.getAttribute('style')||'';
-  if(style===lastObservedStyle)return;
-  lastObservedStyle=style;
-  if(Number.isFinite(raw)&&(/DOWNLOAD|UPLOAD/i.test(label)||/NETWORK SCORE/i.test(label))){
-    const targetMax=/NETWORK SCORE/i.test(label)?100:prettyScale(raw);
-    const isBandwidth=/DOWNLOAD|UPLOAD/i.test(label);
-    const targetDeg=clamp(raw/targetMax,0,1)*290;
-    if(Math.abs(targetDeg-meterState.deg)>.15){
-      lastMeter={value:raw,label,max:targetMax,isBandwidth};setScale(targetMax,isBandwidth);
-      if(gsap&&!reduced){gsap.killTweensOf(meterState);gsap.to(meterState,{deg:targetDeg,duration:.9,ease:'expo.out',onUpdate:()=>{dial.style.setProperty('--meter',`${meterState.deg}deg`);dial.style.setProperty('--needle',`${meterState.deg}deg`)}})}
-    }
-  }
-}).observe(dial,{attributes:true,attributeFilter:['style']});
-
 activatePanel('network',false);
