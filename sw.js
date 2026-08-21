@@ -1,4 +1,4 @@
-const CACHE = 'wifi-checker-pro-v12-intelligence';
+const CACHE = 'wifi-checker-pro-v13-semantic-visual';
 const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './quality.css', './meter-flow.css', './intelligence.css', './workspace.css', './app.js', './motion.js', './engine-v3.js', './quality.js', './meter-flow.js', './intelligence.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
