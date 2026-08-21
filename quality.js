@@ -25,8 +25,9 @@ function installLegend(){
   el.innerHTML='<span class="good"><i></i>Bagus</span><span class="normal"><i></i>Normal</span><span class="warn"><i></i>Tinggi</span><span class="bad"><i></i>Buruk</span>';
   const readouts=q('.meter-readouts');if(readouts)readouts.after(el);else card.append(el);
 }
+function activeNeedle(){return q('#flowGaugeNeedle')||q('#gaugeNeedle')}
 function updateGaugeQuality(){
-  const gauge=q('.clean-gauge'),needle=q('#gaugeNeedle');if(!gauge||!needle)return;
+  const gauge=q('.clean-gauge'),needle=activeNeedle();if(!gauge||!needle)return;
   const m=(needle.getAttribute('transform')||'').match(/rotate\(([-\d.]+)/);if(!m)return;
   const ratio=Math.max(0,Math.min(1,(Number(m[1])-135)/270));
   const level=ratio<.25?'red':ratio<.5?'orange':ratio<.72?'yellow':'green';
@@ -42,11 +43,14 @@ function updateValues(){
   const confidence=q('#planConfidence');setQuality(confidence,confidenceLevel(confidence?.textContent),true);
 }
 function observeText(selector){const el=q(selector);if(el)new MutationObserver(updateValues).observe(el,{childList:true,characterData:true,subtree:true})}
+function observeNeedle(){const n=activeNeedle();if(!n)return false;new MutationObserver(updateGaugeQuality).observe(n,{attributes:true,attributeFilter:['transform']});return true}
 function initialize(){
   if(initialized||!q('#gaugeNeedle')||!q('#meterPing'))return false;
   initialized=true;replaceGaugeGradient();installLegend();updateValues();updateGaugeQuality();
   ['#pingValue','#jitterValue','#downloadValue','#uploadValue','#bufferbloatGrade','#planConfidence'].forEach(observeText);
-  new MutationObserver(updateGaugeQuality).observe(q('#gaugeNeedle'),{attributes:true,attributeFilter:['transform']});
+  if(!observeNeedle())setTimeout(observeNeedle,120);
   return true;
 }
-let attempts=0;const timer=setInterval(()=>{attempts++;if(initialize()||attempts>=50)clearInterval(timer)},100);initialize();
+window.addEventListener('wifi-test-phase',e=>{const d=e.detail||{},v=Number(d.value);if(!Number.isFinite(v))return;if(d.phase==='ping')setQuality(q('#meterPing'),pingLevel(v));if(d.phase==='download')setQuality(q('#meterDown'),downloadLevel(v));if(d.phase==='upload')setQuality(q('#meterUp'),uploadLevel(v))});
+window.addEventListener('wifi-engine-ready',()=>setTimeout(()=>{replaceGaugeGradient();observeNeedle()},180));
+let attempts=0;const timer=setInterval(()=>{attempts++;if(initialize()||attempts>=60)clearInterval(timer)},100);initialize();
