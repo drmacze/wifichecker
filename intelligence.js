@@ -1,7 +1,7 @@
 const q=s=>document.querySelector(s);
 const qa=s=>[...document.querySelectorAll(s)];
 const HISTORY_KEY='wifi-checker-pro-history-v2';
-let lastSession=null,testStartedAt=0;
+let lastSession=null,testStartedAt=0,livePhaseBytes={download:0,upload:0};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 async function waitForUI(){for(let i=0;i<160;i++){if(q('.meter-readouts')&&q('[data-workspace-panel="health"]')&&q('[data-workspace-panel="insights"]'))return true;await sleep(50)}return false}
@@ -13,6 +13,10 @@ function overallStability(s){const vals=[s?.phases?.download?.stability,s?.phase
 function parseDelta(){const m=(q('#bufferbloatDelta')?.textContent||'').match(/\+([\d.]+)/);return m?Number(m[1]):NaN}
 function history(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}catch{return[]}}
 
+function installTrafficDisclosure(){
+  const row=qa('.permission-row').find(el=>/Traffic speed test/i.test(el.querySelector('b')?.textContent||''));const small=row?.querySelector('small');
+  if(small)small.textContent='Traffic nyata ke Cloudflare edge. Full Test adaptif; pada koneksi sangat cepat penggunaan data dapat mendekati ~375 MB, biasanya jauh lebih rendah.';
+}
 function installProof(){
   if(q('.measurement-proof'))return;
   const el=document.createElement('div');el.className='measurement-proof';el.innerHTML=`
@@ -49,10 +53,10 @@ function installUseCases(){
   panel.prepend(card);try{window.lucide?.createIcons({attrs:{'stroke-width':1.8}})}catch{}
 }
 function setProof(id,value,sub,score){const el=q(id);if(!el)return;el.querySelector('b').textContent=value;if(sub)el.querySelector('small').textContent=sub;el.dataset.tone=Number.isFinite(score)?tone(score):''}
-function updateProof(s,live=false){
+function updateProof(s,live=false,extraBytes=0){
   const conf=overallConfidence(s),stable=overallStability(s);setProof('#proofConfidence',Number.isFinite(conf)?`${conf}%`:'Mengukur…',Number.isFinite(conf)?`${conf>=85?'tinggi':conf>=65?'baik':conf>=45?'sedang':'rendah'}`:'mengumpulkan sampel',conf);
   setProof('#proofStability',Number.isFinite(stable)?`${stable}%`:'—','variasi throughput',stable);
-  setProof('#proofTraffic',mb(s?.totalBytes||0),'download + upload');
+  setProof('#proofTraffic',mb((s?.totalBytes||0)+Math.max(0,extraBytes)),'download + upload');
   const dur=s?.durationMs||(testStartedAt?performance.now()-testStartedAt:0);setProof('#proofDuration',sec(dur),live?'sedang berjalan':'waktu pengukuran');
   q('.measurement-proof')?.classList.toggle('measurement-live',live);
 }
@@ -84,9 +88,9 @@ function enrichExport(){
 }
 
 if(await waitForUI()){
-  installProof();installHealth();installUseCases();enrichExport();
-  window.addEventListener('wifi-measurement-reset',()=>{testStartedAt=performance.now();lastSession=window.wifiMeasurementSession;updateProof(lastSession,true);const badge=q('#measurementBadge');if(badge){badge.className='intel-badge';badge.textContent='Mengukur…'}});
-  window.addEventListener('wifi-test-phase',e=>{const d=e.detail||{};const s=window.wifiMeasurementSession;if(d.bytes&&s){const phase=s.phases?.[d.phase];if(!phase)s.totalBytes=Math.max(s.totalBytes||0,Number(d.bytes)||0)}updateProof(s,true)});
-  window.addEventListener('wifi-measurement-session',e=>{lastSession=e.detail||snapshotSession();updateProof(lastSession,false);updateHealth(lastSession);evaluateUseCases(lastSession);setTimeout(updateTrends,120);enrichExport()});
+  installTrafficDisclosure();installProof();installHealth();installUseCases();enrichExport();
+  window.addEventListener('wifi-measurement-reset',()=>{testStartedAt=performance.now();livePhaseBytes={download:0,upload:0};lastSession=window.wifiMeasurementSession;updateProof(lastSession,true);const badge=q('#measurementBadge');if(badge){badge.className='intel-badge';badge.textContent='Mengukur…'}});
+  window.addEventListener('wifi-test-phase',e=>{const d=e.detail||{},s=window.wifiMeasurementSession;if((d.phase==='download'||d.phase==='upload')&&d.status==='sample'&&Number.isFinite(Number(d.bytes)))livePhaseBytes[d.phase]=Number(d.bytes);if((d.phase==='download'||d.phase==='upload')&&d.status==='result')livePhaseBytes[d.phase]=0;const extra=(d.phase==='download'||d.phase==='upload')?livePhaseBytes[d.phase]:0;updateProof(s,true,extra)});
+  window.addEventListener('wifi-measurement-session',e=>{lastSession=e.detail||snapshotSession();livePhaseBytes={download:0,upload:0};updateProof(lastSession,false);updateHealth(lastSession);evaluateUseCases(lastSession);setTimeout(updateTrends,120);enrichExport()});
   const engine=q('#engineState');if(engine)new MutationObserver(()=>{if(engine.textContent.trim().toUpperCase()==='COMPLETE'&&lastSession){updateHealth(lastSession);evaluateUseCases(lastSession);setTimeout(updateTrends,160)}}).observe(engine,{childList:true,characterData:true,subtree:true});
 }
