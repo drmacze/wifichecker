@@ -30,9 +30,24 @@ loadLibraries().then(({Lenis,gsap,ScrollTrigger})=>{
   setTimeout(()=>ScrollTrigger.refresh(),120);
 }).catch(err=>{console.warn('[motion] fallback',err);document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'))});
 
-import('./engine-v4.js').catch(err=>console.warn('[engine-v4] fallback',err));
-import('./quality.js').catch(err=>console.warn('[quality] fallback',err));
-import('./meter-flow.js').catch(err=>console.warn('[meter-flow] fallback',err));
-import('./intelligence.js').catch(err=>console.warn('[intelligence] fallback',err));
-import('./accuracy.js').catch(err=>console.warn('[accuracy] fallback',err));
-import('./advanced-diagnostics.js').catch(err=>console.warn('[advanced-diagnostics] fallback',err));
+const testButtons=['runTestBtn','quickCheckBtn'].map(id=>document.getElementById(id)).filter(Boolean);
+const initialButtonLabels=testButtons.map(btn=>btn.querySelector('b,span')?.textContent||'');
+testButtons.forEach(btn=>{btn.disabled=true;btn.dataset.engineLoading='true'});
+
+const engineBoot=import('./engine-v4.js').then(()=>{
+  if(!window.wifiCheckerEngineV4)throw new Error('Engine v4 tidak siap.');
+  testButtons.forEach(btn=>{if(document.getElementById('engineState')?.textContent.trim().toUpperCase()!=='RUNNING')btn.disabled=false;delete btn.dataset.engineLoading});
+  document.documentElement.dataset.engineVersion='4';
+}).catch(err=>{
+  console.warn('[engine-v4] fallback',err);
+  testButtons.forEach((btn,i)=>{btn.disabled=false;delete btn.dataset.engineLoading;const label=btn.querySelector('b,span');if(label&&initialButtonLabels[i])label.textContent=initialButtonLabels[i]});
+});
+
+Promise.allSettled([
+  engineBoot,
+  import('./quality.js'),
+  import('./meter-flow.js'),
+  import('./intelligence.js'),
+  import('./accuracy.js'),
+  import('./advanced-diagnostics.js')
+]).then(results=>results.forEach((r,i)=>{if(r.status==='rejected')console.warn('[ui module] fallback',i,r.reason)}));
