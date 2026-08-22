@@ -30,8 +30,9 @@ loadLibraries().then(({Lenis,gsap,ScrollTrigger})=>{
   setTimeout(()=>ScrollTrigger.refresh(),120);
 }).catch(err=>{console.warn('[motion] fallback',err);document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'))});
 
-import('./engine-v3.js').catch(err=>console.warn('[engine-v3] fallback',err));
+import('./engine-v4.js').catch(err=>console.warn('[engine-v4] fallback',err));
 import('./quality.js').catch(err=>console.warn('[quality] fallback',err));
 import('./meter-flow.js').catch(err=>console.warn('[meter-flow] fallback',err));
 import('./intelligence.js').catch(err=>console.warn('[intelligence] fallback',err));
 import('./accuracy.js').catch(err=>console.warn('[accuracy] fallback',err));
+import('./advanced-diagnostics.js').catch(err=>console.warn('[advanced-diagnostics] fallback',err));
