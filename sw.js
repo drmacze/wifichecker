@@ -1,4 +1,4 @@
-const CACHE = 'wifi-checker-pro-v14-meter-accuracy';
+const CACHE = 'wifi-checker-pro-v15-accurate-meter';
 const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './quality.css', './meter-flow.css', './intelligence.css', './workspace.css', './app.js', './motion.js', './engine-v3.js', './quality.js', './meter-flow.js', './intelligence.js', './accuracy.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
