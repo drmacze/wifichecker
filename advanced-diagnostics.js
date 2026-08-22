@@ -4,9 +4,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 async function waitForUI(){for(let i=0;i<180;i++){if(q('[data-workspace-panel="health"]')&&q('[data-workspace-panel="insights"]')&&q('.measurement-proof'))return true;await new Promise(r=>setTimeout(r,50))}return false}
 function tone(score){return score>=82?'good':score>=58?'warn':'bad'}
-function fmt(v,d=1){return Number.isFinite(v)?Number(v).toFixed(d):'—'}
 function bufferDelta(){const m=(q('#bufferbloatDelta')?.textContent||'').match(/\+([\d.]+)/);return m?Number(m[1]):NaN}
-function resultValue(id){const v=parseFloat(q(id)?.textContent);return Number.isFinite(v)?v:NaN}
 
 function installIntegrityCard(){
   const panel=q('[data-workspace-panel="health"]');if(!panel||q('#integrityCard'))return;
@@ -19,7 +17,7 @@ function installIntegrityCard(){
       <div><span>Network changes</span><b id="integrityChanges">—</b><small>saat tes berjalan</small></div>
     </div>
     <div id="integrityFlags" class="integrity-flags"><span>Jalankan Full Test untuk audit kualitas pengukuran.</span></div>`;
-  const measure=q('#measurementQualityCard');measure?.after(card)||panel.prepend(card);
+  const measure=q('#measurementQualityCard');if(measure)measure.after(card);else panel.prepend(card);
 }
 function installBottleneckCard(){
   const panel=q('[data-workspace-panel="insights"]');if(!panel||q('#bottleneckCard'))return;
@@ -32,7 +30,7 @@ function installBottleneckCard(){
       <div><span>Load penalty</span><b id="loadPenalty">—</b></div>
       <div><span>Repeatability</span><b id="repeatabilityValue">—</b></div>
     </div>`;
-  const use=q('#useCaseCard');use?.after(card)||panel.prepend(card);
+  const use=q('#useCaseCard');if(use)use.after(card);else panel.prepend(card);
 }
 function installEnginePill(){
   const top=q('.instrument-top .meter-top-actions');if(!top||q('#engineVersionPill'))return;
@@ -43,7 +41,7 @@ function integrityScore(s){
   const d=s?.phases?.download,u=s?.phases?.upload,p=s?.phases?.ping,i=s?.integrity||{};
   const conf=[d?.confidence,u?.confidence,p?.confidence].filter(Number.isFinite);let score=conf.length?conf.reduce((a,b)=>a+b,0)/conf.length:60;
   if(i.networkChanged)score-=18;if(i.visibilityInterrupted)score-=12;if(i.offlineDuringTest)score-=30;
-  score-=Math.min(15,(d?.outliersDropped||0)+(u?.outliersDropped||0)*3);
+  score-=Math.min(15,((d?.outliersDropped||0)+(u?.outliersDropped||0))*3);
   score-=Math.min(12,(s?.totalRetries||0)*2+(s?.totalFailures||0)*4);
   return Math.round(clamp(score,0,100));
 }
@@ -66,7 +64,7 @@ function analyzeBottleneck(s){
   const loadScore=!Number.isFinite(delta)?NaN:Math.round(clamp(100-delta*.8,0,100));
   let title='Koneksi seimbang',text='Tidak ada bottleneck dominan yang terlihat dari metrik browser.',kind='good';
   if(Number.isFinite(delta)&&delta>80){title='Bufferbloat / antrian router';text=`Latency naik sekitar ${Math.round(delta)} ms saat koneksi dibebani. Prioritaskan SQM/QoS atau kurangi upload/download bersamaan.`;kind='bad'}
-  else if(Number.isFinite(ping)&&ping>90||Number.isFinite(jitter)&&jitter>25){title='Latency dan jitter';text='Respons koneksi menjadi bottleneck utama. Ini lebih terasa pada gaming, voice, dan video call daripada sekadar angka Mbps.';kind='bad'}
+  else if((Number.isFinite(ping)&&ping>90)||(Number.isFinite(jitter)&&jitter>25)){title='Latency dan jitter';text='Respons koneksi menjadi bottleneck utama. Ini lebih terasa pada gaming, voice, dan video call daripada sekadar angka Mbps.';kind='bad'}
   else if(Number.isFinite(efficiency)&&efficiency<55&&Number.isFinite(repeat)&&repeat>=65){title='Throughput di bawah perkiraan';text=`Download saat ini hanya sekitar ${Math.round(efficiency)}% dari estimasi tier. Karena hasil cukup stabil, cek congestion ISP, Wi‑Fi, VPN, atau perangkat lain.`;kind='warn'}
   else if(Number.isFinite(up)&&up<5&&Number.isFinite(down)&&down>=20){title='Upload menjadi batas';text='Download cukup, tetapi upload rendah dapat membatasi video call, live streaming, cloud backup, dan pengiriman file.';kind='warn'}
   else if(Number.isFinite(repeat)&&repeat<55){title='Koneksi tidak konsisten';text='Variasi antar burst cukup besar. Hasil puncak mungkin bagus, tetapi throughput sulit dipertahankan secara stabil.';kind='warn'}
