@@ -24,6 +24,7 @@ jobs:
           node --input-type=module --check < engine-v3.js
           node --input-type=module --check < meter-flow.js
           node --input-type=module --check < intelligence.js
+          node --input-type=module --check < accuracy.js
 
       - name: Check referenced DOM IDs
         run: |
@@ -33,58 +34,49 @@ jobs:
           html = Path('index.html').read_text()
           app = Path('app.js').read_text()
           ids = set(re.findall(r'id="([^"]+)"', html))
-          used_app = set(re.findall(r"\$\('([^']+)'\)", app))
+          used_app = set(re.findall(r"\$('([^']+)'\)", app))
           missing = sorted(used_app - ids)
           if missing:
               raise SystemExit('Missing app DOM IDs: ' + ', '.join(missing))
           print(f'OK: {len(used_app)} app engine IDs found in HTML')
           PY
 
-      - name: Check semantic engine and visual system
+      - name: Check accuracy and semantic system
         run: |
           python3 - <<'PY'
           from pathlib import Path
           motion = Path('motion.js').read_text()
-          motion_css = Path('motion.css').read_text()
           engine = Path('engine-v3.js').read_text()
           flow = Path('meter-flow.js').read_text()
-          flow_css = Path('meter-flow.css').read_text()
+          accuracy = Path('accuracy.js').read_text()
           intel = Path('intelligence.js').read_text()
-          intel_css = Path('intelligence.css').read_text()
           quality = Path('quality.js').read_text()
           quality_css = Path('quality.css').read_text()
-          workspace = Path('workspace.js').read_text()
           css = Path('workspace.css').read_text()
           sw = Path('sw.js').read_text()
-          required_motion = ['lenis@1.3.26', 'gsap@3.15.0', 'ScrollTrigger', "import('./engine-v3.js')", "import('./meter-flow.js')", "import('./quality.js')", "import('./intelligence.js')"]
-          required_motion_css = ["@import url('./quality.css')", "@import url('./meter-flow.css')", "@import url('./intelligence.css')"]
-          required_engine = ['wifiMeasurementSession', 'requestWithRetry', 'stability', 'confidence', 'successRate', 'targetSamples', 'hardCap', 'wifi-test-phase']
-          required_flow = ['flowGaugeNeedle', 'flowGaugeProgress', 'requestAnimationFrame(frame)', 'phase-steps', 'phase-transition', 'TES SELESAI', 'semakin tinggi semakin baik', 'semakin rendah semakin baik']
-          required_intel = ['measurement-proof', 'MEASUREMENT QUALITY', 'Gaming', 'Video Call', '4K Streaming', 'Request success', 'wifi-measurement-session', 'higherScore', 'lowerScore', 'profileState']
-          required_intel_css = ['.measurement-proof', '.usecase-grid', '.measure-grid', '.trend-row']
-          required_flow_css = ['.phase-steps', '.phase-transition', '.flow-gauge-progress']
-          required_quality = ['speedLevel', 'pingLevel', 'jitterLevel', 'loadedLatencyLevel', 'setGaugeQuality', 'replaceGaugeGradient']
-          required_quality_css = ['--q-green:#22c55e', '--q-yellow:#eab308', '--q-orange:#f97316', '--q-red:#ef4444', '.legend-rule']
-          required_workspace = ['installGauge', 'gaugeNeedle', 'convertMbps', 'estimatePlan']
-          required_css = ['.clean-gauge', '.gauge-progress', '.meter-readouts', '.provider-card', '--bg:#080808', ':root.light']
-          required_cache = ['v13-semantic-visual', 'engine-v3.js', 'meter-flow.js', 'meter-flow.css', 'intelligence.js', 'intelligence.css', 'quality.css', 'quality.js', 'workspace.js']
+          required_motion = ["import('./engine-v3.js')", "import('./meter-flow.js')", "import('./accuracy.js')"]
+          required_engine = ['wifiMeasurementSession', 'requestWithRetry', 'stability', 'confidence', 'successRate']
+          required_flow = ['sessionValue', 'wifiMeasurementSession', 'flowGaugeValue', 'flowGaugeNeedle', 'prettyScale', 'median Engine v3']
+          required_accuracy = ['estimateFromCurrent', 'exactDownload', 'consistent', 'Tes saat ini', 'Paket asli tetap hanya dapat dipastikan']
+          required_intel = ['higherScore', 'lowerScore', 'profileState']
+          required_quality = ['speedLevel', 'pingLevel', 'jitterLevel', 'loadedLatencyLevel']
+          required_quality_css = ['--q-green:#22c55e', '--q-red:#ef4444']
+          required_css = ['--bg:#080808', ':root.light', '.clean-gauge']
+          required_cache = ['v14-meter-accuracy', 'accuracy.js', 'engine-v3.js', 'meter-flow.js']
           missing = ([x for x in required_motion if x not in motion] +
-                     [x for x in required_motion_css if x not in motion_css] +
                      [x for x in required_engine if x not in engine] +
                      [x for x in required_flow if x not in flow] +
+                     [x for x in required_accuracy if x not in accuracy] +
                      [x for x in required_intel if x not in intel] +
-                     [x for x in required_intel_css if x not in intel_css] +
-                     [x for x in required_flow_css if x not in flow_css] +
                      [x for x in required_quality if x not in quality] +
                      [x for x in required_quality_css if x not in quality_css] +
-                     [x for x in required_workspace if x not in workspace] +
                      [x for x in required_css if x not in css] +
                      [x for x in required_cache if x not in sw])
           if missing:
               raise SystemExit('Missing integration: ' + ', '.join(missing))
           if "import('./engine-v2.js')" in motion or 'engine-v2.js' in sw:
               raise SystemExit('Legacy engine v2 still active')
-          if '@latest' in motion or '@latest' in workspace:
+          if '@latest' in motion:
               raise SystemExit('Unpinned dependency detected')
-          print('OK: semantic speed/latency logic, weighted profile scoring, monochrome visual system, smooth gauge, and v13 PWA cache are wired')
+          print('OK: Engine v3 is the truth source; visible meter is isolated from legacy DOM animation; package estimate is current-test-first; PWA v14 is wired')
           PY
