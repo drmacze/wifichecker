@@ -6,8 +6,8 @@ function waitForGauge(){
   return new Promise(resolve=>{
     let tries=0;
     const tick=()=>{
-      const gauge=q('.clean-gauge'),oldNeedle=q('#gaugeNeedle'),oldProgress=q('#gaugeProgress');
-      if(gauge&&oldNeedle&&oldProgress)return resolve({gauge,oldNeedle,oldProgress});
+      const gauge=q('.clean-gauge'),oldNeedle=q('#gaugeNeedle'),oldProgress=q('#gaugeProgress'),oldCenter=q('.clean-gauge .gauge-center'),oldLabels=q('.clean-gauge .gauge-labels');
+      if(gauge&&oldNeedle&&oldProgress&&oldCenter&&oldLabels)return resolve({gauge,oldNeedle,oldProgress,oldCenter,oldLabels});
       if(++tries<120)setTimeout(tick,50);
     };
     tick();
@@ -35,10 +35,12 @@ function sessionValue(kind){
   return Number.isFinite(v)?v:NaN;
 }
 
-waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
-  oldNeedle.style.opacity='0';oldProgress.style.opacity='0';
+waitForGauge().then(({gauge,oldNeedle,oldProgress,oldCenter,oldLabels})=>{
+  oldNeedle.style.opacity='0';oldProgress.style.opacity='0';oldCenter.style.opacity='0';oldLabels.style.opacity='0';
   const progress=oldProgress.cloneNode(true);progress.id='flowGaugeProgress';progress.classList.add('flow-gauge-progress');progress.style.opacity='1';oldProgress.after(progress);
   const needle=oldNeedle.cloneNode(true);needle.id='flowGaugeNeedle';needle.classList.add('flow-gauge-needle');needle.style.opacity='1';oldNeedle.after(needle);
+  const center=oldCenter.cloneNode(true);center.classList.add('flow-gauge-center');center.style.opacity='1';center.querySelector('#gaugeLabel').id='flowGaugeLabel';center.querySelector('#gaugeValue').id='flowGaugeValue';center.querySelector('#gaugeUnit').id='flowGaugeUnit';oldCenter.after(center);
+  const labels=oldLabels.cloneNode(true);labels.classList.add('flow-gauge-labels');labels.style.opacity='1';labels.querySelector('#gaugeMid').id='flowGaugeMid';labels.querySelector('#gaugeMax').id='flowGaugeMax';oldLabels.after(labels);
 
   const card=q('.meter-card');
   const steps=document.createElement('div');steps.className='phase-steps';steps.innerHTML='<span data-phase="ping"><i></i>Ping</span><span data-phase="download"><i></i>Download</span><span data-phase="upload"><i></i>Upload</span>';
@@ -48,18 +50,18 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
   const readouts=q('.meter-readouts');if(readouts)readouts.before(transition);else card?.append(transition);
 
   const state={angle:135,targetAngle:135,raw:0,targetRaw:0,max:100,kind:'idle',label:'SPEED TEST',last:performance.now()};
-  const valueEl=q('#gaugeValue'),unitEl=q('#gaugeUnit'),labelEl=q('#gaugeLabel');
+  const valueEl=q('#flowGaugeValue'),unitEl=q('#flowGaugeUnit'),labelEl=q('#flowGaugeLabel');
 
   function setScale(){
-    const half=displayValue(state.max/2),full=displayValue(state.max),mid=q('#gaugeMid'),max=q('#gaugeMax');
+    const half=displayValue(state.max/2),full=displayValue(state.max),mid=q('#flowGaugeMid'),max=q('#flowGaugeMax');
     if(mid)mid.textContent=String(Number(half.v.toFixed(half.d)));
     if(max)max.textContent=`${Number(full.v.toFixed(full.d))} ${full.u}`;
   }
-  function setTarget(raw,kind,label,{lockScale=false}={}){
+  function setTarget(raw,kind,label){
     if(!Number.isFinite(raw))return;
     const nextScale=prettyScale(raw);
     if(kind!==state.kind){state.kind=kind;state.max=nextScale;state.targetRaw=0;state.targetAngle=135}
-    else if(!lockScale)state.max=Math.max(state.max,nextScale);
+    else state.max=Math.max(state.max,nextScale);
     state.targetRaw=raw;
     state.targetAngle=135+clamp(raw/state.max,0,1)*270;
     state.label=label||kind.toUpperCase();
@@ -92,8 +94,7 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
       showTransition(names[d.phase]||'MENGUKUR','Sedang mengukur…',d.phase==='ping'?'Latency: semakin rendah semakin baik.':'Speed: semakin tinggi semakin baik.');
     }
     if(d.status==='sample'&&Number.isFinite(Number(d.value))&&(d.phase==='download'||d.phase==='upload')){
-      setTarget(Number(d.value),d.phase,d.phase.toUpperCase());
-      writeLiveReadout(d.phase,Number(d.value));
+      setTarget(Number(d.value),d.phase,d.phase.toUpperCase());writeLiveReadout(d.phase,Number(d.value));
     }
     if(d.status==='result'){
       if(d.phase==='ping'){
@@ -107,17 +108,11 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress})=>{
   });
 
   window.addEventListener('wifi-measurement-session',e=>{
-    const session=e.detail||window.wifiMeasurementSession;
-    if(session?.status!=='complete')return;
-    const down=Number(session?.phases?.download?.value);
-    const up=Number(session?.phases?.upload?.value);
-    const ping=Number(session?.phases?.ping?.ping);
+    const session=e.detail||window.wifiMeasurementSession;if(session?.status!=='complete')return;
+    const down=Number(session?.phases?.download?.value),up=Number(session?.phases?.upload?.value),ping=Number(session?.phases?.ping?.ping);
     if(Number.isFinite(ping)){const el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`}
     if(Number.isFinite(up))writeLiveReadout('upload',up);
-    if(Number.isFinite(down)){
-      writeLiveReadout('download',down);
-      setTarget(down,'download','HASIL DOWNLOAD');
-    }
+    if(Number.isFinite(down)){writeLiveReadout('download',down);setTarget(down,'download','HASIL DOWNLOAD')}
   });
 
   const legacyLabel=q('#dialLabel'),legacyValue=q('#dialValue');
