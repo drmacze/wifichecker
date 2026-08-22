@@ -34,3 +34,4 @@ import('./engine-v3.js').catch(err=>console.warn('[engine-v3] fallback',err));
 import('./quality.js').catch(err=>console.warn('[quality] fallback',err));
 import('./meter-flow.js').catch(err=>console.warn('[meter-flow] fallback',err));
 import('./intelligence.js').catch(err=>console.warn('[intelligence] fallback',err));
+import('./accuracy.js').catch(err=>console.warn('[accuracy] fallback',err));
