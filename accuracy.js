@@ -7,6 +7,7 @@ function historyDownloads(){try{return JSON.parse(localStorage.getItem(HISTORY_K
 function nearestTier(target,maxTier=Infinity){const allowed=TIERS.filter(t=>t<=maxTier);const list=allowed.length?allowed:[TIERS[0]];return list.reduce((a,b)=>Math.abs(Math.log(b/target))<Math.abs(Math.log(a/target))?b:a,list[0])}
 function exactDownload(session=window.wifiMeasurementSession){const v=Number(session?.phases?.download?.value);return Number.isFinite(v)&&v>0?v:NaN}
 function engineConfidence(session=window.wifiMeasurementSession){const v=Number(session?.phases?.download?.confidence);return Number.isFinite(v)?v:NaN}
+function integrityPenalty(session){const i=session?.integrity||{};let p=0;if(i.networkChanged)p+=22;if(i.visibilityInterrupted)p+=12;if(i.offlineDuringTest)p+=35;p+=Math.min(15,(session?.totalRetries||0)*2+(session?.totalFailures||0)*4);p+=Math.min(12,(session?.phases?.download?.outliersDropped||0)*4);return Math.min(60,p)}
 
 function estimateFromCurrent(current,session){
   if(!Number.isFinite(current)||current<=0)return null;
@@ -18,12 +19,12 @@ function estimateFromCurrent(current,session){
   const cap=current*(hasConsensus?1.85:1.55);
   const tier=nearestTier(target,cap);
   const ratio=current/tier;
-  const confidence=engineConfidence(session);
+  const rawConfidence=engineConfidence(session),penalty=integrityPenalty(session),confidence=Number.isFinite(rawConfidence)?Math.max(0,rawConfidence-penalty):NaN;
   let label='Rendah';
   if(Number.isFinite(confidence)&&confidence>=82&&ratio>=.72&&ratio<=1.15&&consistent.length>=1)label='Tinggi';
   else if((!Number.isFinite(confidence)||confidence>=58)&&ratio>=.58&&ratio<=1.2)label='Sedang';
   const historyBest=historyDownloads().reduce((m,v)=>Math.max(m,v),current);
-  return{tier,current,historyBest,consistent:consistent.length,confidence:label,engineConfidence:confidence};
+  return{tier,current,historyBest,consistent:consistent.length,confidence:label,engineConfidence:confidence,rawConfidence,penalty};
 }
 
 function setText(el,text){if(el&&el.textContent!==text)el.textContent=text}
@@ -39,8 +40,9 @@ function applyAccuracy(session=window.wifiMeasurementSession){
   const confSuffix=Number.isFinite(est.engineConfidence)?` · measurement ${Math.round(est.engineConfidence)}%`:'';
   setText(q('#planConfidence'),`${est.confidence}${confSuffix}`);
   const historyPart=est.historyBest>current*1.15?` Best riwayat ${est.historyBest.toFixed(est.historyBest>=100?0:1)} Mbps disimpan hanya sebagai pembanding, bukan hasil tes sekarang.`:'';
-  setText(q('#planNote'),`Kecepatan Download tes ini ${current.toFixed(1)} Mbps. Perkiraan paket ≈${est.tier} Mbps memakai hasil saat ini sebagai acuan utama${est.consistent?` + ${est.consistent} riwayat yang konsisten`:''}.${historyPart} Paket asli tetap hanya dapat dipastikan dari akun/kontrak ISP.`);
-  if(meta)meta.dataset.accuracySource='engine-v3';
+  const integrityPart=est.penalty>0?` Confidence diturunkan ${est.penalty} poin karena integrity flag selama pengujian.`:'';
+  setText(q('#planNote'),`Kecepatan Download tes ini ${current.toFixed(1)} Mbps. Perkiraan paket ≈${est.tier} Mbps memakai hasil saat ini sebagai acuan utama${est.consistent?` + ${est.consistent} riwayat yang konsisten`:''}.${historyPart}${integrityPart} Paket asli tetap hanya dapat dipastikan dari akun/kontrak ISP.`);
+  if(meta)meta.dataset.accuracySource=`engine-v${session.version||4}`;
 }
 
 function scheduleApply(session){[0,180,720,1300].forEach(ms=>setTimeout(()=>applyAccuracy(session),ms))}
