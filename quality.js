@@ -30,19 +30,20 @@ function installLegend(){
   const readouts=q('.meter-readouts');if(readouts)readouts.after(el);else card.append(el);
 }
 function activeNeedle(){return q('#flowGaugeNeedle')||q('#gaugeNeedle')}
+function activeGaugeLabel(){return q('#flowGaugeLabel')||q('#gaugeLabel')}
 function setGaugeQuality(kind,value){
   const gauge=q('.clean-gauge');if(!gauge||!['download','upload'].includes(kind))return;
   const level=speedLevel(value,kind);if(!level)return;
-  gauge.dataset.metric=kind;
-  gauge.dataset.quality=level;
+  gauge.dataset.metric=kind;gauge.dataset.quality=level;
   gauge.classList.remove(...qualityClasses);gauge.classList.add(`quality-${level}`);
 }
 function updateValues(){
   const ping=Number.parseFloat(q('#pingValue')?.textContent),jitter=Number.parseFloat(q('#jitterValue')?.textContent),down=Number.parseFloat(q('#downloadValue')?.textContent),up=Number.parseFloat(q('#uploadValue')?.textContent);
+  const visibleLabel=(activeGaugeLabel()?.textContent||'').toUpperCase();
   if(Number.isFinite(ping))setQuality(q('#meterPing'),pingLevel(ping));
   if(Number.isFinite(jitter))setQuality(q('#jitterValue')?.closest('.metric-number')||q('#jitterValue'),jitterLevel(jitter));
-  if(Number.isFinite(down)){setQuality(q('#meterDown'),speedLevel(down,'download'));if((q('#gaugeLabel')?.textContent||'').toUpperCase().includes('DOWNLOAD'))setGaugeQuality('download',down)}
-  if(Number.isFinite(up)){setQuality(q('#meterUp'),speedLevel(up,'upload'));if((q('#gaugeLabel')?.textContent||'').toUpperCase().includes('UPLOAD'))setGaugeQuality('upload',up)}
+  if(Number.isFinite(down)){setQuality(q('#meterDown'),speedLevel(down,'download'));if(visibleLabel.includes('DOWNLOAD'))setGaugeQuality('download',down)}
+  if(Number.isFinite(up)){setQuality(q('#meterUp'),speedLevel(up,'upload'));if(visibleLabel.includes('UPLOAD'))setGaugeQuality('upload',up)}
   const downLoaded=Number.parseFloat(q('#downLoadedLatency')?.textContent),upLoaded=Number.parseFloat(q('#upLoadedLatency')?.textContent);
   if(Number.isFinite(downLoaded))setQuality(q('#downLoadedLatency'),loadedLatencyLevel(Math.max(0,downLoaded-(Number.isFinite(ping)?ping:0))));
   if(Number.isFinite(upLoaded))setQuality(q('#upLoadedLatency'),loadedLatencyLevel(Math.max(0,upLoaded-(Number.isFinite(ping)?ping:0))));
@@ -50,7 +51,7 @@ function updateValues(){
   const confidence=q('#planConfidence');setQuality(confidence,confidenceLevel(confidence?.textContent),true);
 }
 function observeText(selector){const el=q(selector);if(el)new MutationObserver(updateValues).observe(el,{childList:true,characterData:true,subtree:true})}
-function observeNeedle(){const n=activeNeedle();if(!n)return false;return true}
+function observeNeedle(){return Boolean(activeNeedle())}
 function initialize(){
   if(initialized||!q('#gaugeNeedle')||!q('#meterPing'))return false;
   initialized=true;replaceGaugeGradient();installLegend();updateValues();
@@ -62,6 +63,13 @@ window.addEventListener('wifi-test-phase',e=>{
   if(d.phase==='ping')setQuality(q('#meterPing'),pingLevel(v));
   if(d.phase==='download'){setQuality(q('#meterDown'),speedLevel(v,'download'));setGaugeQuality('download',v)}
   if(d.phase==='upload'){setQuality(q('#meterUp'),speedLevel(v,'upload'));setGaugeQuality('upload',v)}
+});
+window.addEventListener('wifi-measurement-session',e=>{
+  const s=e.detail||window.wifiMeasurementSession;if(s?.status!=='complete')return;
+  const down=Number(s?.phases?.download?.value),up=Number(s?.phases?.upload?.value),ping=Number(s?.phases?.ping?.ping);
+  if(Number.isFinite(ping))setQuality(q('#meterPing'),pingLevel(ping));
+  if(Number.isFinite(up))setQuality(q('#meterUp'),speedLevel(up,'upload'));
+  if(Number.isFinite(down)){setQuality(q('#meterDown'),speedLevel(down,'download'));setGaugeQuality('download',down)}
 });
 window.addEventListener('wifi-engine-ready',()=>setTimeout(()=>{replaceGaugeGradient();observeNeedle()},180));
 let attempts=0;const timer=setInterval(()=>{attempts++;if(initialize()||attempts>=60)clearInterval(timer)},100);initialize();
