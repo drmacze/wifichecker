@@ -21,10 +21,11 @@ jobs:
           node --check quality.js
           node --check sw.js
           node --input-type=module --check < workspace.js
-          node --input-type=module --check < engine-v3.js
+          node --input-type=module --check < engine-v4.js
           node --input-type=module --check < meter-flow.js
           node --input-type=module --check < intelligence.js
           node --input-type=module --check < accuracy.js
+          node --input-type=module --check < advanced-diagnostics.js
 
       - name: Check referenced DOM IDs
         run: |
@@ -41,32 +42,43 @@ jobs:
           print(f'OK: {len(used_app)} app engine IDs found in HTML')
           PY
 
-      - name: Check accuracy and semantic system
+      - name: Check Engine v4 system integrity
         run: |
           python3 - <<'PY'
           from pathlib import Path
           motion = Path('motion.js').read_text()
-          engine = Path('engine-v3.js').read_text()
+          motion_css = Path('motion.css').read_text()
+          engine = Path('engine-v4.js').read_text()
           flow = Path('meter-flow.js').read_text()
           accuracy = Path('accuracy.js').read_text()
+          advanced = Path('advanced-diagnostics.js').read_text()
+          advanced_css = Path('advanced-diagnostics.css').read_text()
           intel = Path('intelligence.js').read_text()
           quality = Path('quality.js').read_text()
           quality_css = Path('quality.css').read_text()
           css = Path('workspace.css').read_text()
           sw = Path('sw.js').read_text()
-          required_motion = ["import('./engine-v3.js')", "import('./meter-flow.js')", "import('./accuracy.js')"]
-          required_engine = ['wifiMeasurementSession', 'requestWithRetry', 'stability', 'confidence', 'successRate']
-          required_flow = ['sessionValue', 'wifiMeasurementSession', 'flowGaugeValue', 'flowGaugeNeedle', 'prettyScale', 'median Engine v3']
-          required_accuracy = ['estimateFromCurrent', 'exactDownload', 'consistent', 'Tes saat ini', 'Paket asli tetap hanya dapat dipastikan']
+
+          required_motion = ["import('./engine-v4.js')", 'wifiCheckerEngineV4', 'engineBoot', "import('./advanced-diagnostics.js')"]
+          required_motion_css = ["@import url('./advanced-diagnostics.css')"]
+          required_engine = ['version:4', "method:'multi-stream-http'", 'runBurst', 'streamCount', 'Promise.allSettled', 'rejectOutliers', 'outliersDropped', 'integrityMonitoring:true', 'visibilityInterrupted', 'networkChanged', 'aggregate-parallel-burst', 'measureLoadedLatency']
+          required_flow = ['wifiMeasurementSession', 'flowGaugeValue', 'flowGaugeNeedle', 'sessionValue', 'sustained result Engine v4', 'prettyScale']
+          required_accuracy = ['estimateFromCurrent', 'integrityPenalty', 'accuracySource', 'Tes saat ini', 'Paket asli tetap hanya dapat dipastikan']
+          required_advanced = ['TEST INTEGRITY', 'BOTTLENECK ANALYSIS', 'integrityScore', 'analyzeBottleneck', 'Max streams', 'Outlier', 'Network changes', 'Repeatability']
+          required_advanced_css = ['.integrity-grid', '.integrity-flags', '.bottleneck-main', '.evidence-grid']
           required_intel = ['higherScore', 'lowerScore', 'profileState']
           required_quality = ['speedLevel', 'pingLevel', 'jitterLevel', 'loadedLatencyLevel', 'wifi-measurement-session']
           required_quality_css = ['--q-green:#22c55e', '--q-red:#ef4444']
           required_css = ['--bg:#080808', ':root.light', '.clean-gauge']
-          required_cache = ['v15-accurate-meter', 'accuracy.js', 'engine-v3.js', 'meter-flow.js']
+          required_cache = ['v16-engine-v4', 'engine-v4.js', 'advanced-diagnostics.js', 'advanced-diagnostics.css', 'accuracy.js', 'meter-flow.js']
+
           missing = ([x for x in required_motion if x not in motion] +
+                     [x for x in required_motion_css if x not in motion_css] +
                      [x for x in required_engine if x not in engine] +
                      [x for x in required_flow if x not in flow] +
                      [x for x in required_accuracy if x not in accuracy] +
+                     [x for x in required_advanced if x not in advanced] +
+                     [x for x in required_advanced_css if x not in advanced_css] +
                      [x for x in required_intel if x not in intel] +
                      [x for x in required_quality if x not in quality] +
                      [x for x in required_quality_css if x not in quality_css] +
@@ -74,9 +86,11 @@ jobs:
                      [x for x in required_cache if x not in sw])
           if missing:
               raise SystemExit('Missing integration: ' + ', '.join(missing))
+          if "import('./engine-v3.js')" in motion or 'engine-v3.js' in sw:
+              raise SystemExit('Legacy Engine v3 still active')
           if "import('./engine-v2.js')" in motion or 'engine-v2.js' in sw:
-              raise SystemExit('Legacy engine v2 still active')
+              raise SystemExit('Legacy Engine v2 still active')
           if '@latest' in motion:
               raise SystemExit('Unpinned dependency detected')
-          print('OK: Engine v3 is the truth source; visible meter is isolated from legacy DOM animation; package estimate is current-test-first; PWA v15 is wired')
+          print('OK: Engine v4 multi-stream bursts, robust outlier filtering, integrity monitoring, isolated final meter, conservative package estimation, advanced diagnostics, and PWA v16 are wired')
           PY
