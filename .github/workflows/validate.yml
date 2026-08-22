@@ -59,10 +59,10 @@ jobs:
           required_flow = ['sessionValue', 'wifiMeasurementSession', 'flowGaugeValue', 'flowGaugeNeedle', 'prettyScale', 'median Engine v3']
           required_accuracy = ['estimateFromCurrent', 'exactDownload', 'consistent', 'Tes saat ini', 'Paket asli tetap hanya dapat dipastikan']
           required_intel = ['higherScore', 'lowerScore', 'profileState']
-          required_quality = ['speedLevel', 'pingLevel', 'jitterLevel', 'loadedLatencyLevel']
+          required_quality = ['speedLevel', 'pingLevel', 'jitterLevel', 'loadedLatencyLevel', 'wifi-measurement-session']
           required_quality_css = ['--q-green:#22c55e', '--q-red:#ef4444']
           required_css = ['--bg:#080808', ':root.light', '.clean-gauge']
-          required_cache = ['v14-meter-accuracy', 'accuracy.js', 'engine-v3.js', 'meter-flow.js']
+          required_cache = ['v15-accurate-meter', 'accuracy.js', 'engine-v3.js', 'meter-flow.js']
           missing = ([x for x in required_motion if x not in motion] +
                      [x for x in required_engine if x not in engine] +
                      [x for x in required_flow if x not in flow] +
@@ -78,5 +78,5 @@ jobs:
               raise SystemExit('Legacy engine v2 still active')
           if '@latest' in motion:
               raise SystemExit('Unpinned dependency detected')
-          print('OK: Engine v3 is the truth source; visible meter is isolated from legacy DOM animation; package estimate is current-test-first; PWA v14 is wired')
+          print('OK: Engine v3 is the truth source; visible meter is isolated from legacy DOM animation; package estimate is current-test-first; PWA v15 is wired')
           PY
