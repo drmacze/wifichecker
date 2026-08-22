@@ -99,10 +99,10 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress,oldCenter,oldLabels})=>{
     if(d.status==='result'){
       if(d.phase==='ping'){
         const ping=Number(d.value),el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`;
-        showTransition('PING SELESAI',`${ping.toFixed(1)} ms`,'Semakin rendah semakin baik. Berikutnya mengukur download.',latencyTone(ping));
+        const p95=Number(d.stats?.p95);showTransition('PING SELESAI',`${ping.toFixed(1)} ms`,Number.isFinite(p95)?`P95 ${p95.toFixed(1)} ms · semakin rendah semakin baik.`:'Semakin rendah semakin baik. Berikutnya mengukur download.',latencyTone(ping));
       }else{
-        const speed=Number(d.value);writeLiveReadout(d.phase,speed);setTarget(speed,d.phase,`${d.phase.toUpperCase()} HASIL`);
-        showTransition(`${d.phase.toUpperCase()} SELESAI`,`${speed.toFixed(1)} Mbps`,'Semakin tinggi semakin baik.',speedTone(speed,d.phase));
+        const speed=Number(d.value),streams=Number(d.stats?.maxStreams);writeLiveReadout(d.phase,speed);setTarget(speed,d.phase,`${d.phase.toUpperCase()} HASIL`);
+        showTransition(`${d.phase.toUpperCase()} SELESAI`,`${speed.toFixed(1)} Mbps`,`${Number.isFinite(streams)?`${streams} stream · `:''}semakin tinggi semakin baik.`,speedTone(speed,d.phase));
       }
     }
   });
@@ -139,7 +139,7 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress,oldCenter,oldLabels})=>{
       const exact=sessionValue('download');
       if(Number.isFinite(exact))setTarget(exact,'download','HASIL DOWNLOAD');
       else setTimeout(()=>{const fallback=parseFloat(q('#downloadValue')?.textContent);if(Number.isFinite(fallback))setTarget(fallback,'download','HASIL DOWNLOAD')},700);
-      showTransition('TES SELESAI','Semua pengukuran selesai','Hasil final diambil dari median Engine v3, bukan angka animasi sementara.','green');
+      showTransition('TES SELESAI','Semua pengukuran selesai','Hasil final memakai sustained result Engine v4 + audit integrity.','green');
     }
   }).observe(engine,{childList:true,characterData:true,subtree:true});
 
