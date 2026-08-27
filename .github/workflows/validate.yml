@@ -27,6 +27,7 @@ jobs:
           node --input-type=module --check < accuracy.js
           node --input-type=module --check < advanced-diagnostics.js
           node --input-type=module --check < result-audit.js
+          node --input-type=module --check < video-test.js
 
       - name: Check referenced DOM IDs
         run: |
@@ -43,25 +44,27 @@ jobs:
           print(f'OK: {len(used_app)} app engine IDs found in HTML')
           PY
 
-      - name: Check Engine v5 measurement lab
+      - name: Check Engine v5 measurement lab and video streaming test
         run: |
           python3 - <<'PY'
           from pathlib import Path
           motion=Path('motion.js').read_text(); motion_css=Path('motion.css').read_text(); engine=Path('engine-v5.js').read_text()
           flow=Path('meter-flow.js').read_text(); accuracy=Path('accuracy.js').read_text(); advanced=Path('advanced-diagnostics.js').read_text()
-          audit=Path('result-audit.js').read_text(); audit_css=Path('result-audit.css').read_text(); sw=Path('sw.js').read_text()
-          required_motion=["import('./engine-v5.js')",'wifiCheckerEngineV5','syncEngineBadges',"import('./result-audit.js')"]
-          required_css=["@import url('./result-audit.css')"]
+          audit=Path('result-audit.js').read_text(); audit_css=Path('result-audit.css').read_text(); video=Path('video-test.js').read_text(); video_css=Path('video-test.css').read_text(); sw=Path('sw.js').read_text()
+          required_motion=["import('./engine-v5.js')",'wifiCheckerEngineV5','syncEngineBadges',"import('./result-audit.js')", "import('./video-test.js')"]
+          required_css=["@import url('./result-audit.css')", "@import url('./video-test.css')"]
           required_engine=['version:5',"method:'adaptive-convergent-multistream-http'",'warmupCalibration:true','adaptiveStreamRamping:true','convergenceControl:true','confidenceRange:true','contentionHeuristics:true','edgeConsistency:true','runBurst','adaptiveStreams','rejectOutliers','ci90','convergence','autoExtended','earlyStopped','warmupDiscarded','contentionSuspected','wifi-measurement-audit']
           required_flow=['KALIBRASI','convergence','sustained result Engine v5','wifiMeasurementSession','flowGaugeValue','flowGaugeNeedle']
           required_accuracy=['resultWidth','integrityPenalty','contentionSuspected','ci90Low','accuracySource','Paket asli tetap hanya dapat dipastikan']
           required_audit=['RESULT AUDIT','LOCAL BASELINE','auditScore','relativeWidth','wifi-measurement-audit','Sebaiknya ulangi Full Test','contention/cross-traffic']
           required_audit_css=['.audit-grid','.audit-verdict','.baseline-grid']
-          required_cache=['v17-engine-v5-audit','engine-v5.js','result-audit.js','result-audit.css','accuracy.js','meter-flow.js']
-          missing=([x for x in required_motion if x not in motion]+[x for x in required_css if x not in motion_css]+[x for x in required_engine if x not in engine]+[x for x in required_flow if x not in flow]+[x for x in required_accuracy if x not in accuracy]+[x for x in required_audit if x not in audit]+[x for x in required_audit_css if x not in audit_css]+[x for x in required_cache if x not in sw])
-          if missing: raise SystemExit('Missing v5 integration: '+', '.join(missing))
+          required_video=['Video Resolution Test','REAL STREAMING LAB','shaka-player@5.2.7','sintel-mp4-only/dash.mpd','selectVariantTrack','getVideoPlaybackQuality','estimatedBandwidth','buffered','rebuffers','Data transferred','Recommended','beginPlaybackClock','Streaming Strength','RSSI/dBm']
+          required_video_css=['.video-lab','.video-stage','.resolution-picker','.video-metric-grid','.video-verdict','.video-test-launch']
+          required_cache=['v18-video-streaming-lab','engine-v5.js','result-audit.js','result-audit.css','video-test.js','video-test.css','accuracy.js','meter-flow.js']
+          missing=([x for x in required_motion if x not in motion]+[x for x in required_css if x not in motion_css]+[x for x in required_engine if x not in engine]+[x for x in required_flow if x not in flow]+[x for x in required_accuracy if x not in accuracy]+[x for x in required_audit if x not in audit]+[x for x in required_audit_css if x not in audit_css]+[x for x in required_video if x not in video]+[x for x in required_video_css if x not in video_css]+[x for x in required_cache if x not in sw])
+          if missing: raise SystemExit('Missing integration: '+', '.join(missing))
           if "import('./engine-v4.js')" in motion or 'engine-v4.js' in sw: raise SystemExit('Legacy Engine v4 still active')
           if "import('./engine-v3.js')" in motion or 'engine-v3.js' in sw: raise SystemExit('Legacy Engine v3 still active')
-          if '@latest' in motion: raise SystemExit('Unpinned dependency detected')
-          print('OK: Engine v5 warm-up calibration, adaptive stream ramping, convergence control, uncertainty range, contention heuristics, edge audit, isolated meter, baseline analysis, and PWA v17 are wired')
+          if '@latest' in motion or '@latest' in video: raise SystemExit('Unpinned dependency detected')
+          print('OK: Engine v5, Result Audit, real locked-resolution streaming playback, playback QoE metrics, recommendation logic, and PWA v18 are wired')
           PY
