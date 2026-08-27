@@ -1,5 +1,5 @@
-const CACHE = 'wifi-checker-pro-v16-engine-v4';
-const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './quality.css', './meter-flow.css', './intelligence.css', './advanced-diagnostics.css', './workspace.css', './app.js', './motion.js', './engine-v4.js', './quality.js', './meter-flow.js', './intelligence.js', './accuracy.js', './advanced-diagnostics.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'wifi-checker-pro-v17-engine-v5-audit';
+const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './quality.css', './meter-flow.css', './intelligence.css', './advanced-diagnostics.css', './result-audit.css', './workspace.css', './app.js', './motion.js', './engine-v5.js', './quality.js', './meter-flow.js', './intelligence.js', './accuracy.js', './advanced-diagnostics.js', './result-audit.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
