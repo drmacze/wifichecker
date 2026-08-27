@@ -6,7 +6,6 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const median=a=>{const x=a.filter(Number.isFinite).slice().sort((m,n)=>m-n);if(!x.length)return NaN;const i=Math.floor(x.length/2);return x.length%2?x[i]:(x[i-1]+x[i])/2};
 const percentile=(a,p)=>{const x=a.filter(Number.isFinite).slice().sort((m,n)=>m-n);if(!x.length)return NaN;const i=(x.length-1)*p,l=Math.floor(i),h=Math.ceil(i);return l===h?x[l]:x[l]+(x[h]-x[l])*(i-l)};
 const fmt=(v,d=1)=>Number.isFinite(v)?Number(v).toFixed(d):'—';
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let player=null,timer=null,tickTimer=null,test=null,shakaPromise=null;
 
 function loadShaka(){
@@ -29,7 +28,7 @@ function installLab(){
     <header class="video-lab-head"><div><span>REAL STREAMING LAB</span><h2 id="videoLabTitle">Video Resolution Test</h2><p>Pilih resolusi, tonton stream nyata, lalu lihat kekuatan playback dan kualitas jaringan secara live.</p></div><button type="button" class="video-close" data-video-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
     <div class="video-lab-layout">
       <div class="video-stage-col">
-        <div class="video-stage"><video id="videoLabPlayer" playsinline controls preload="none"></video><div id="videoOverlay" class="video-overlay"><span>SIAP</span><b>Pilih resolusi lalu mulai</b><small>Stream adaptive-media nyata · kualitas akan dikunci</small></div><div class="video-live-badge"><i></i><span id="videoLiveState">IDLE</span></div></div>
+        <div class="video-stage"><video id="videoLabPlayer" playsinline controls muted preload="none"></video><div id="videoOverlay" class="video-overlay"><span>SIAP</span><b>Pilih resolusi lalu mulai</b><small>Stream adaptive-media nyata · kualitas akan dikunci</small></div><div class="video-live-badge"><i></i><span id="videoLiveState">IDLE</span></div></div>
         <div class="resolution-picker" id="resolutionPicker">${RESOLUTIONS.map(h=>`<button type="button" data-height="${h}" class="${h===1080?'active':''}">${h===2160?'4K':`${h}p`}</button>`).join('')}</div>
         <div class="video-controls-row"><label>Durasi<select id="videoTestDuration"><option value="15">15 detik</option><option value="30" selected>30 detik</option><option value="60">60 detik</option></select></label><button id="startVideoTest" type="button" class="video-primary"><i data-lucide="play"></i><span>Mulai Video Test</span></button><button id="stopVideoTest" type="button" class="video-secondary" disabled>Stop</button></div>
         <div class="video-progress"><div><span id="videoProgressBar"></span></div><small id="videoProgressText">Belum berjalan</small></div>
@@ -42,7 +41,7 @@ function installLab(){
           <div><span>Bandwidth estimate</span><b id="vmBandwidth">—</b><small>player EWMA</small></div>
           <div><span>Headroom</span><b id="vmHeadroom">—</b><small>bandwidth ÷ bitrate</small></div>
           <div><span>Buffer health</span><b id="vmBuffer">—</b><small>seconds ahead</small></div>
-          <div><span>Startup time</span><b id="vmStartup">—</b><small>click → playing</small></div>
+          <div><span>Startup time</span><b id="vmStartup">—</b><small>load → playing</small></div>
           <div><span>Rebuffer</span><b id="vmRebuffer">—</b><small id="vmRebufferTime">0.0 s total</small></div>
           <div><span>Dropped frames</span><b id="vmDropped">—</b><small id="vmDecoded">— decoded</small></div>
           <div><span>Data transferred</span><b id="vmData">—</b><small>media + manifest</small></div>
@@ -51,7 +50,7 @@ function installLab(){
           <div><span>Recommended</span><b id="vmRecommended">—</b><small>safe headroom target</small></div>
         </div>
         <div class="video-detail-card"><span>LIVE ANALYSIS</span><b id="videoAnalysisTitle">Menunggu tes</b><p id="videoAnalysisText">Saat video berjalan, sistem memantau startup delay, buffer, stall, dropped frame, bitrate stream, bandwidth estimate, dan perubahan koneksi.</p></div>
-        <div class="video-note"><b>Catatan akurasi</b><p>Resolusi tidak memiliki kebutuhan Mbps yang universal. Test ini memakai bitrate track video yang benar-benar diputar. Netflix/YouTube/layanan lain dapat memakai codec dan bitrate berbeda.</p></div>
+        <div class="video-note"><b>Catatan akurasi</b><p>Resolusi tidak memiliki kebutuhan Mbps yang universal. Test ini memakai bitrate track video yang benar-benar diputar. Netflix/YouTube/layanan lain dapat memakai codec dan bitrate berbeda. Audio dimute saat mulai agar autoplay stabil di mobile; kamu bisa unmute dari player.</p></div>
       </aside>
     </div>
   </div>`;
@@ -103,25 +102,28 @@ function paintVerdict(score,final){
   v.className=`video-verdict ${cls}`;v.querySelector('.video-score strong').textContent=Number.isFinite(score)?score:'—';v.querySelector('b').textContent=final?`${label} untuk resolusi ini`:label;
   if(final){const r=recommendation(),target=selectedHeight(),actual=test?.track?.height||target;v.querySelector('p').textContent=r?`Tes ${actual===2160?'4K':`${actual}p`} selesai. Resolusi aman berdasarkan bandwidth konservatif dan stall: ${r.height===2160?'4K':`${r.height}p`}.`:'Tes selesai; data bandwidth belum cukup untuk rekomendasi resolusi.'}
 }
+function beginPlaybackClock(duration,target){
+  if(!test?.running||test.clockStartedAt)return;test.clockStartedAt=performance.now();
+  tickTimer=setInterval(()=>{if(!test?.running||!test.clockStartedAt)return;paintLive();const elapsed=(performance.now()-test.clockStartedAt)/1000,progress=clamp(elapsed/duration,0,1);q('#videoProgressBar').style.width=`${progress*100}%`;q('#videoProgressText').textContent=`${Math.min(duration,elapsed).toFixed(0)} / ${duration} detik · ${test.track?.height||target}p locked`;if(progress>=1)finishTest('complete')},500);
+}
 async function destroyPlayer(){clearInterval(tickTimer);clearTimeout(timer);tickTimer=timer=null;try{q('#videoLabPlayer')?.pause()}catch{}try{await player?.destroy?.()}catch{}player=null}
 async function startTest(){
   if(test?.running)return;const startBtn=q('#startVideoTest'),stopBtn=q('#stopVideoTest'),video=q('#videoLabPlayer'),target=selectedHeight(),duration=Number(q('#videoTestDuration').value)||30;
-  startBtn.disabled=true;stopBtn.disabled=false;q('#resolutionPicker').querySelectorAll('button').forEach(b=>b.disabled=true);q('#videoTestDuration').disabled=true;setOverlay('MENYIAPKAN','Memuat stream…','Kualitas akan dikunci pada track terdekat.',true);setLive('LOAD');await destroyPlayer();
-  test={running:true,target,duration,startedAt:performance.now(),playStartedAt:0,startupMs:NaN,rebuffers:0,rebufferMs:0,waitingAt:0,bytes:0,bandwidthSamples:[],bufferSamples:[],networkChanges:0,tracks:[],track:null};
+  startBtn.disabled=true;stopBtn.disabled=false;q('#resolutionPicker').querySelectorAll('button').forEach(b=>b.disabled=true);q('#videoTestDuration').disabled=true;q('#videoProgressBar').style.width='0';setOverlay('MENYIAPKAN','Memuat stream…','Kualitas akan dikunci pada track terdekat.',true);setLive('LOAD');await destroyPlayer();
+  test={running:true,target,duration,startedAt:performance.now(),loadStartedAt:0,playStartedAt:0,clockStartedAt:0,startupMs:NaN,rebuffers:0,rebufferMs:0,waitingAt:0,bytes:0,bandwidthSamples:[],bufferSamples:[],networkChanges:0,tracks:[],track:null};
   try{
     const shaka=await loadShaka();if(!shaka.Player.isBrowserSupported())throw new Error('Browser ini tidak didukung untuk adaptive media test.');
     player=new shaka.Player();await player.attach(video);player.configure({abr:{enabled:false}});
     const net=player.getNetworkingEngine();net?.registerResponseFilter((type,response)=>{const n=response?.data?.byteLength||0;if(test?.running&&Number.isFinite(n))test.bytes+=n});
     player.addEventListener('error',e=>{if(test?.running)q('#videoAnalysisText').textContent=`Player error ${e.detail?.code||''}.`});
-    video.muted=false;video.playsInline=true;
+    video.muted=true;video.playsInline=true;
     const onWaiting=()=>{if(!test?.running||!test.playStartedAt||video.paused)return;if(!test.waitingAt){test.waitingAt=performance.now();test.rebuffers++}};
-    const onPlaying=()=>{if(!test?.running)return;const now=performance.now();if(!test.playStartedAt){test.playStartedAt=now;test.startupMs=now-test.startedAt}else if(test.waitingAt){test.rebufferMs+=now-test.waitingAt;test.waitingAt=0}setOverlay('LIVE',`${target===2160?'4K':`${target}p`} streaming test`,'Tonton video sambil metrik jaringan dianalisis.',false);setLive('LIVE')};
+    const onPlaying=()=>{if(!test?.running)return;const now=performance.now();if(!test.playStartedAt){test.playStartedAt=now;test.startupMs=now-(test.loadStartedAt||test.startedAt);beginPlaybackClock(duration,target)}else if(test.waitingAt){test.rebufferMs+=now-test.waitingAt;test.waitingAt=0}const actual=test.track?.height||target;setOverlay('LIVE',`${actual===2160?'4K':`${actual}p`} streaming test`,'Tonton video sambil metrik jaringan dianalisis.',false);setLive('LIVE')};
     video.addEventListener('waiting',onWaiting);video.addEventListener('playing',onPlaying);
     test.cleanup=()=>{video.removeEventListener('waiting',onWaiting);video.removeEventListener('playing',onPlaying)};
     const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection,connChange=()=>{if(test?.running)test.networkChanges++};conn?.addEventListener?.('change',connChange);test.connCleanup=()=>conn?.removeEventListener?.('change',connChange);
-    await player.load(VIDEO_MANIFEST);test.tracks=player.getVariantTracks().filter(t=>Number.isFinite(t.height));const track=chooseTrack(test.tracks,target);if(!track)throw new Error('Track video tidak tersedia.');test.track=track;player.selectVariantTrack(track,true,0);video.currentTime=0;
-    try{await video.play()}catch(e){setOverlay('TEKAN PLAY','Autoplay diblokir browser','Tekan tombol Play pada video; pengukuran akan lanjut otomatis.',false)}
-    const phaseStart=performance.now();tickTimer=setInterval(()=>{if(!test?.running)return;paintLive();const elapsed=(performance.now()-phaseStart)/1000,progress=clamp(elapsed/duration,0,1);q('#videoProgressBar').style.width=`${progress*100}%`;q('#videoProgressText').textContent=`${Math.min(duration,elapsed).toFixed(0)} / ${duration} detik · ${test.track?.height||target}p locked`;if(progress>=1)finishTest('complete')},500);
+    test.loadStartedAt=performance.now();await player.load(VIDEO_MANIFEST);test.tracks=player.getVariantTracks().filter(t=>Number.isFinite(t.height));const track=chooseTrack(test.tracks,target);if(!track)throw new Error('Track video tidak tersedia.');test.track=track;player.selectVariantTrack(track,true,0);video.currentTime=0;
+    try{await video.play()}catch(e){setOverlay('TEKAN PLAY','Autoplay diblokir browser','Tekan tombol Play pada video; countdown baru dimulai setelah video benar-benar playing.',false);setLive('PAUSED')}
   }catch(e){console.error('[video-test]',e);setOverlay('GAGAL','Video test tidak dapat dimulai',e.message||'Periksa koneksi dan coba lagi.',true);setLive('ERROR');await finishTest('error')}
 }
 async function finishTest(reason='complete'){
