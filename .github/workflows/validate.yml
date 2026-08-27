@@ -58,13 +58,13 @@ jobs:
           required_accuracy=['resultWidth','integrityPenalty','contentionSuspected','ci90Low','accuracySource','Paket asli tetap hanya dapat dipastikan']
           required_audit=['RESULT AUDIT','LOCAL BASELINE','auditScore','relativeWidth','wifi-measurement-audit','Sebaiknya ulangi Full Test','contention/cross-traffic']
           required_audit_css=['.audit-grid','.audit-verdict','.baseline-grid']
-          required_video=['Video Resolution Test','REAL STREAMING LAB','shaka-player@5.2.7','sintel-mp4-only/dash.mpd','selectVariantTrack','getVideoPlaybackQuality','estimatedBandwidth','buffered','rebuffers','Data transferred','Recommended','beginPlaybackClock','Streaming Strength','RSSI/dBm']
+          required_video=['Video Resolution Test','REAL STREAMING LAB','shaka-player@5.2.7','sintel-mp4-only/dash.mpd','angel-one-hls-apple/master.m3u8','isIOSFamily','parseHlsMaster','startNativeHls','nativeHlsIOS:true','selectVariantTrack','getVideoPlaybackQuality','buffered','rebuffers','Resource timing','Engine v5','beginPlaybackClock','Streaming Strength','RSSI/dBm']
           required_video_css=['.video-lab','.video-stage','.resolution-picker','.video-metric-grid','.video-verdict','.video-test-launch']
-          required_cache=['v18-video-streaming-lab','engine-v5.js','result-audit.js','result-audit.css','video-test.js','video-test.css','accuracy.js','meter-flow.js']
+          required_cache=['v19-ios-native-hls','engine-v5.js','result-audit.js','result-audit.css','video-test.js','video-test.css','accuracy.js','meter-flow.js']
           missing=([x for x in required_motion if x not in motion]+[x for x in required_css if x not in motion_css]+[x for x in required_engine if x not in engine]+[x for x in required_flow if x not in flow]+[x for x in required_accuracy if x not in accuracy]+[x for x in required_audit if x not in audit]+[x for x in required_audit_css if x not in audit_css]+[x for x in required_video if x not in video]+[x for x in required_video_css if x not in video_css]+[x for x in required_cache if x not in sw])
           if missing: raise SystemExit('Missing integration: '+', '.join(missing))
           if "import('./engine-v4.js')" in motion or 'engine-v4.js' in sw: raise SystemExit('Legacy Engine v4 still active')
           if "import('./engine-v3.js')" in motion or 'engine-v3.js' in sw: raise SystemExit('Legacy Engine v3 still active')
           if '@latest' in motion or '@latest' in video: raise SystemExit('Unpinned dependency detected')
-          print('OK: Engine v5, Result Audit, real locked-resolution streaming playback, playback QoE metrics, recommendation logic, and PWA v18 are wired')
+          print('OK: Engine v5, Result Audit, desktop DASH, iOS native HLS resolution locking, playback QoE metrics, recommendation logic, and PWA v19 are wired')
           PY
