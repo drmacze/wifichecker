@@ -1,4 +1,4 @@
-const CACHE = 'wifi-checker-pro-v18-video-streaming-lab';
+const CACHE = 'wifi-checker-pro-v19-ios-native-hls';
 const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './quality.css', './meter-flow.css', './intelligence.css', './advanced-diagnostics.css', './result-audit.css', './video-test.css', './workspace.css', './app.js', './motion.js', './engine-v5.js', './quality.js', './meter-flow.js', './intelligence.js', './accuracy.js', './advanced-diagnostics.js', './result-audit.js', './video-test.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
