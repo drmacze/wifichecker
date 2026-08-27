@@ -48,5 +48,6 @@ Promise.allSettled([
   import('./intelligence.js'),
   import('./accuracy.js'),
   import('./advanced-diagnostics.js'),
-  import('./result-audit.js')
+  import('./result-audit.js'),
+  import('./video-test.js')
 ]).then(results=>{results.forEach((r,i)=>{if(r.status==='rejected')console.warn('[ui module] fallback',i,r.reason)});syncEngineBadges(window.wifiMeasurementSession?.version||5)});
