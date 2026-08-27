@@ -2,38 +2,11 @@ const q=(s)=>document.querySelector(s);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function waitForGauge(){
-  return new Promise(resolve=>{
-    let tries=0;
-    const tick=()=>{
-      const gauge=q('.clean-gauge'),oldNeedle=q('#gaugeNeedle'),oldProgress=q('#gaugeProgress'),oldCenter=q('.clean-gauge .gauge-center'),oldLabels=q('.clean-gauge .gauge-labels');
-      if(gauge&&oldNeedle&&oldProgress&&oldCenter&&oldLabels)return resolve({gauge,oldNeedle,oldProgress,oldCenter,oldLabels});
-      if(++tries<120)setTimeout(tick,50);
-    };
-    tick();
-  });
-}
-function prettyScale(v){
-  const tiers=[10,25,50,75,100,150,200,300,500,750,1000,1500,2000,2500,5000,10000];
-  const wanted=Math.max(10,v*1.22);
-  return tiers.find(x=>x>=wanted)||Math.ceil(wanted/5000)*5000;
-}
-function displayValue(mbps){
-  const mode=q('#speedUnitSelect')?.value||'auto';
-  if(mode==='gbps'||(mode==='auto'&&mbps>=1000))return{v:mbps/1000,u:'Gbps',d:2};
-  if(mode==='kbps'||(mode==='auto'&&mbps<1))return{v:mbps*1000,u:'Kbps',d:mbps<.1?1:0};
-  if(mode==='MBps')return{v:mbps/8,u:'MB/s',d:2};
-  return{v:mbps,u:'Mbps',d:mbps>=100?0:1};
-}
-function writeLiveReadout(kind,raw){
-  const c=displayValue(raw),el=q(kind==='download'?'#meterDown':'#meterUp');
-  if(el)el.innerHTML=`${c.v.toFixed(c.d)} <small>${c.u}</small>`;
-}
-function sessionValue(kind){
-  const p=window.wifiMeasurementSession?.phases?.[kind];
-  const v=Number(p?.value ?? (kind==='ping'?p?.ping:NaN));
-  return Number.isFinite(v)?v:NaN;
-}
+function waitForGauge(){return new Promise(resolve=>{let tries=0;const tick=()=>{const gauge=q('.clean-gauge'),oldNeedle=q('#gaugeNeedle'),oldProgress=q('#gaugeProgress'),oldCenter=q('.clean-gauge .gauge-center'),oldLabels=q('.clean-gauge .gauge-labels');if(gauge&&oldNeedle&&oldProgress&&oldCenter&&oldLabels)return resolve({gauge,oldNeedle,oldProgress,oldCenter,oldLabels});if(++tries<120)setTimeout(tick,50)};tick()})}
+function prettyScale(v){const tiers=[10,25,50,75,100,150,200,300,500,750,1000,1500,2000,2500,5000,10000],wanted=Math.max(10,v*1.22);return tiers.find(x=>x>=wanted)||Math.ceil(wanted/5000)*5000}
+function displayValue(mbps){const mode=q('#speedUnitSelect')?.value||'auto';if(mode==='gbps'||(mode==='auto'&&mbps>=1000))return{v:mbps/1000,u:'Gbps',d:2};if(mode==='kbps'||(mode==='auto'&&mbps<1))return{v:mbps*1000,u:'Kbps',d:mbps<.1?1:0};if(mode==='MBps')return{v:mbps/8,u:'MB/s',d:2};return{v:mbps,u:'Mbps',d:mbps>=100?0:1}}
+function writeLiveReadout(kind,raw){const c=displayValue(raw),el=q(kind==='download'?'#meterDown':'#meterUp');if(el)el.innerHTML=`${c.v.toFixed(c.d)} <small>${c.u}</small>`}
+function sessionValue(kind){const p=window.wifiMeasurementSession?.phases?.[kind],v=Number(p?.value ?? (kind==='ping'?p?.ping:NaN));return Number.isFinite(v)?v:NaN}
 
 waitForGauge().then(({gauge,oldNeedle,oldProgress,oldCenter,oldLabels})=>{
   oldNeedle.style.opacity='0';oldProgress.style.opacity='0';oldCenter.style.opacity='0';oldLabels.style.opacity='0';
@@ -42,106 +15,32 @@ waitForGauge().then(({gauge,oldNeedle,oldProgress,oldCenter,oldLabels})=>{
   const center=oldCenter.cloneNode(true);center.classList.add('flow-gauge-center');center.style.opacity='1';center.querySelector('#gaugeLabel').id='flowGaugeLabel';center.querySelector('#gaugeValue').id='flowGaugeValue';center.querySelector('#gaugeUnit').id='flowGaugeUnit';oldCenter.after(center);
   const labels=oldLabels.cloneNode(true);labels.classList.add('flow-gauge-labels');labels.style.opacity='1';labels.querySelector('#gaugeMid').id='flowGaugeMid';labels.querySelector('#gaugeMax').id='flowGaugeMax';oldLabels.after(labels);
 
-  const card=q('.meter-card');
-  const steps=document.createElement('div');steps.className='phase-steps';steps.innerHTML='<span data-phase="ping"><i></i>Ping</span><span data-phase="download"><i></i>Download</span><span data-phase="upload"><i></i>Upload</span>';
-  card?.querySelector('.instrument-top')?.after(steps);
+  const card=q('.meter-card'),steps=document.createElement('div');steps.className='phase-steps';steps.innerHTML='<span data-phase="ping"><i></i>Ping</span><span data-phase="download"><i></i>Download</span><span data-phase="upload"><i></i>Upload</span>';card?.querySelector('.instrument-top')?.after(steps);
+  const transition=document.createElement('div');transition.className='phase-transition';transition.innerHTML='<span id="phaseTransitionLabel">SIAP</span><strong id="phaseTransitionValue">Tekan GO untuk mulai</strong><small id="phaseTransitionMeta">Pengukuran menggunakan traffic nyata ke Cloudflare edge.</small>';const readouts=q('.meter-readouts');if(readouts)readouts.before(transition);else card?.append(transition);
 
-  const transition=document.createElement('div');transition.className='phase-transition';transition.innerHTML='<span id="phaseTransitionLabel">SIAP</span><strong id="phaseTransitionValue">Tekan GO untuk mulai</strong><small id="phaseTransitionMeta">Pengukuran menggunakan traffic nyata ke Cloudflare edge.</small>';
-  const readouts=q('.meter-readouts');if(readouts)readouts.before(transition);else card?.append(transition);
-
-  const state={angle:135,targetAngle:135,raw:0,targetRaw:0,max:100,kind:'idle',label:'SPEED TEST',last:performance.now()};
-  const valueEl=q('#flowGaugeValue'),unitEl=q('#flowGaugeUnit'),labelEl=q('#flowGaugeLabel');
-
-  function setScale(){
-    const half=displayValue(state.max/2),full=displayValue(state.max),mid=q('#flowGaugeMid'),max=q('#flowGaugeMax');
-    if(mid)mid.textContent=String(Number(half.v.toFixed(half.d)));
-    if(max)max.textContent=`${Number(full.v.toFixed(full.d))} ${full.u}`;
-  }
-  function setTarget(raw,kind,label){
-    if(!Number.isFinite(raw))return;
-    const nextScale=prettyScale(raw);
-    if(kind!==state.kind){state.kind=kind;state.max=nextScale;state.targetRaw=0;state.targetAngle=135}
-    else state.max=Math.max(state.max,nextScale);
-    state.targetRaw=raw;
-    state.targetAngle=135+clamp(raw/state.max,0,1)*270;
-    state.label=label||kind.toUpperCase();
-    gauge.dataset.metric=kind;
-    setScale();
-  }
-  function frame(now){
-    const dt=Math.min(50,now-state.last);state.last=now;
-    const response=reduced?1:1-Math.exp(-dt/175),numberResponse=reduced?1:1-Math.exp(-dt/135);
-    state.angle+=(state.targetAngle-state.angle)*response;state.raw+=(state.targetRaw-state.raw)*numberResponse;
-    needle.setAttribute('transform',`rotate(${state.angle.toFixed(3)} 160 160)`);
-    progress.style.strokeDashoffset=String(100-clamp((state.angle-135)/270,0,1)*100);
-    const shown=displayValue(Math.max(0,state.raw));
-    if(valueEl)valueEl.textContent=shown.v.toFixed(shown.d);
-    if(unitEl)unitEl.textContent=shown.u;
-    if(labelEl)labelEl.textContent=state.label;
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
+  const state={angle:135,targetAngle:135,raw:0,targetRaw:0,max:100,kind:'idle',label:'SPEED TEST',last:performance.now()},valueEl=q('#flowGaugeValue'),unitEl=q('#flowGaugeUnit'),labelEl=q('#flowGaugeLabel');
+  function setScale(){const half=displayValue(state.max/2),full=displayValue(state.max),mid=q('#flowGaugeMid'),max=q('#flowGaugeMax');if(mid)mid.textContent=String(Number(half.v.toFixed(half.d)));if(max)max.textContent=`${Number(full.v.toFixed(full.d))} ${full.u}`}
+  function setTarget(raw,kind,label){if(!Number.isFinite(raw))return;const nextScale=prettyScale(raw);if(kind!==state.kind){state.kind=kind;state.max=nextScale;state.targetRaw=0;state.targetAngle=135}else state.max=Math.max(state.max,nextScale);state.targetRaw=raw;state.targetAngle=135+clamp(raw/state.max,0,1)*270;state.label=label||kind.toUpperCase();gauge.dataset.metric=kind;setScale()}
+  function frame(now){const dt=Math.min(50,now-state.last);state.last=now;const response=reduced?1:1-Math.exp(-dt/175),numberResponse=reduced?1:1-Math.exp(-dt/135);state.angle+=(state.targetAngle-state.angle)*response;state.raw+=(state.targetRaw-state.raw)*numberResponse;needle.setAttribute('transform',`rotate(${state.angle.toFixed(3)} 160 160)`);progress.style.strokeDashoffset=String(100-clamp((state.angle-135)/270,0,1)*100);const shown=displayValue(Math.max(0,state.raw));if(valueEl)valueEl.textContent=shown.v.toFixed(shown.d);if(unitEl)unitEl.textContent=shown.u;if(labelEl)labelEl.textContent=state.label;requestAnimationFrame(frame)}requestAnimationFrame(frame);
 
   function setStep(phase,status){q('.phase-steps')?.querySelectorAll('span').forEach(el=>{const same=el.dataset.phase===phase;if(same&&status==='running'){el.classList.add('active');el.classList.remove('done')}if(same&&status==='result'){el.classList.remove('active');el.classList.add('done')}})}
   function showTransition(label,value,meta,tone='neutral'){const box=q('.phase-transition');if(!box)return;box.classList.remove('show','tone-green','tone-yellow','tone-orange','tone-red');void box.offsetWidth;if(tone!=='neutral')box.classList.add(`tone-${tone}`);q('#phaseTransitionLabel').textContent=label;q('#phaseTransitionValue').textContent=value;q('#phaseTransitionMeta').textContent=meta||'';box.classList.add('show')}
-  function latencyTone(v){return v<=25?'green':v<=50?'yellow':v<=100?'orange':'red'}
-  function speedTone(v,kind){return kind==='upload'?(v>=20?'green':v>=10?'yellow':v>=3?'orange':'red'):(v>=50?'green':v>=25?'yellow':v>=10?'orange':'red')}
+  function latencyTone(v){return v<=25?'green':v<=50?'yellow':v<=100?'orange':'red'}function speedTone(v,kind){return kind==='upload'?(v>=20?'green':v>=10?'yellow':v>=3?'orange':'red'):(v>=50?'green':v>=25?'yellow':v>=10?'orange':'red')}
 
   window.addEventListener('wifi-test-phase',e=>{
     const d=e.detail||{};if(!d.phase)return;setStep(d.phase,d.status);
-    if(d.status==='running'){
-      const names={ping:'PING',download:'DOWNLOAD',upload:'UPLOAD'};
-      showTransition(names[d.phase]||'MENGUKUR','Sedang mengukur…',d.phase==='ping'?'Latency: semakin rendah semakin baik.':'Speed: semakin tinggi semakin baik.');
-    }
-    if(d.status==='sample'&&Number.isFinite(Number(d.value))&&(d.phase==='download'||d.phase==='upload')){
-      setTarget(Number(d.value),d.phase,d.phase.toUpperCase());writeLiveReadout(d.phase,Number(d.value));
-    }
+    if(d.status==='running'){const names={ping:'PING',download:'DOWNLOAD',upload:'UPLOAD'};showTransition(names[d.phase]||'MENGUKUR','Sedang mengukur…',d.phase==='ping'?'Latency: semakin rendah semakin baik.':'Engine v5 menyesuaikan stream dan mencari hasil yang konvergen.')}
+    if(d.status==='calibration'&&Number.isFinite(Number(d.value))){setTarget(Number(d.value),d.phase,'KALIBRASI');showTransition('KALIBRASI',`${Number(d.value).toFixed(1)} Mbps`,'Warm-up untuk memilih payload/stream. Sampel ini tidak dihitung sebagai hasil final.')}
+    if(d.status==='sample'&&Number.isFinite(Number(d.value))&&(d.phase==='download'||d.phase==='upload')){setTarget(Number(d.value),d.phase,d.phase.toUpperCase());writeLiveReadout(d.phase,Number(d.value));const conv=Number(d.convergence),ext=Number(d.autoExtended)||0;showTransition(d.phase.toUpperCase(),`${Number(d.value).toFixed(1)} Mbps`,`${Number(d.streams)||1} stream · convergence ${Number.isFinite(conv)?Math.round(conv)+'%':'—'}${ext?` · +${ext} burst validasi`:''}`)}
     if(d.status==='result'){
-      if(d.phase==='ping'){
-        const ping=Number(d.value),el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`;
-        const p95=Number(d.stats?.p95);showTransition('PING SELESAI',`${ping.toFixed(1)} ms`,Number.isFinite(p95)?`P95 ${p95.toFixed(1)} ms · semakin rendah semakin baik.`:'Semakin rendah semakin baik. Berikutnya mengukur download.',latencyTone(ping));
-      }else{
-        const speed=Number(d.value),streams=Number(d.stats?.maxStreams);writeLiveReadout(d.phase,speed);setTarget(speed,d.phase,`${d.phase.toUpperCase()} HASIL`);
-        showTransition(`${d.phase.toUpperCase()} SELESAI`,`${speed.toFixed(1)} Mbps`,`${Number.isFinite(streams)?`${streams} stream · `:''}semakin tinggi semakin baik.`,speedTone(speed,d.phase));
-      }
+      if(d.phase==='ping'){const ping=Number(d.value),el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`;const p95=Number(d.stats?.p95);showTransition('PING SELESAI',`${ping.toFixed(1)} ms`,Number.isFinite(p95)?`P95 ${p95.toFixed(1)} ms · semakin rendah semakin baik.`:'Semakin rendah semakin baik.',latencyTone(ping))}
+      else{const speed=Number(d.value),stats=d.stats||{},streams=Number(stats.maxStreams);writeLiveReadout(d.phase,speed);setTarget(speed,d.phase,`${d.phase.toUpperCase()} HASIL`);const range=Number.isFinite(stats.ci90Low)&&Number.isFinite(stats.ci90High)?`range ${stats.ci90Low.toFixed(1)}–${stats.ci90High.toFixed(1)} · `:'';showTransition(`${d.phase.toUpperCase()} SELESAI`,`${speed.toFixed(1)} Mbps`,`${Number.isFinite(streams)?`${streams} stream · `:''}${range}convergence ${Math.round(stats.convergence||0)}%`,speedTone(speed,d.phase))}
     }
   });
 
-  window.addEventListener('wifi-measurement-session',e=>{
-    const session=e.detail||window.wifiMeasurementSession;if(session?.status!=='complete')return;
-    const down=Number(session?.phases?.download?.value),up=Number(session?.phases?.upload?.value),ping=Number(session?.phases?.ping?.ping);
-    if(Number.isFinite(ping)){const el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`}
-    if(Number.isFinite(up))writeLiveReadout('upload',up);
-    if(Number.isFinite(down)){writeLiveReadout('download',down);setTarget(down,'download','HASIL DOWNLOAD')}
-  });
-
-  const legacyLabel=q('#dialLabel'),legacyValue=q('#dialValue');
-  function syncLegacy(){
-    const label=(legacyLabel?.textContent||'').toUpperCase(),raw=parseFloat(legacyValue?.textContent);if(!Number.isFinite(raw))return;
-    if(label.includes('LIVE DOWNLOAD'))setTarget(raw,'download','DOWNLOAD');
-    if(label.includes('LIVE UPLOAD'))setTarget(raw,'upload','UPLOAD');
-  }
-  [legacyLabel,legacyValue].filter(Boolean).forEach(el=>new MutationObserver(syncLegacy).observe(el,{childList:true,characterData:true,subtree:true}));
-
-  const stage=q('#testStage');
-  if(stage)new MutationObserver(()=>{
-    const text=stage.textContent.toLowerCase();
-    if(text.includes('loaded latency'))showTransition('ANALISIS JARINGAN','Mengukur loaded latency…','Latency tambahan saat koneksi sibuk: semakin rendah semakin baik.');
-    else if(text.includes('dns'))showTransition('DNS CHECK','Menguji resolver…','Tahap akhir diagnostik sebelum hasil dikunci.');
-  }).observe(stage,{childList:true,characterData:true,subtree:true});
-
-  const engine=q('#engineState');
-  if(engine)new MutationObserver(()=>{
-    const s=engine.textContent.trim().toUpperCase();
-    if(s==='RUNNING')q('.phase-steps')?.querySelectorAll('span').forEach(el=>el.classList.remove('done','active'));
-    if(s==='COMPLETE'){
-      q('.phase-steps')?.querySelectorAll('span').forEach(el=>{el.classList.remove('active');el.classList.add('done')});
-      const exact=sessionValue('download');
-      if(Number.isFinite(exact))setTarget(exact,'download','HASIL DOWNLOAD');
-      else setTimeout(()=>{const fallback=parseFloat(q('#downloadValue')?.textContent);if(Number.isFinite(fallback))setTarget(fallback,'download','HASIL DOWNLOAD')},700);
-      showTransition('TES SELESAI','Semua pengukuran selesai','Hasil final memakai sustained result Engine v4 + audit integrity.','green');
-    }
-  }).observe(engine,{childList:true,characterData:true,subtree:true});
-
+  window.addEventListener('wifi-measurement-session',e=>{const session=e.detail||window.wifiMeasurementSession;if(session?.status!=='complete')return;const down=Number(session?.phases?.download?.value),up=Number(session?.phases?.upload?.value),ping=Number(session?.phases?.ping?.ping);if(Number.isFinite(ping)){const el=q('#meterPing');if(el)el.innerHTML=`${ping.toFixed(1)} <small>ms</small>`}if(Number.isFinite(up))writeLiveReadout('upload',up);if(Number.isFinite(down)){writeLiveReadout('download',down);setTarget(down,'download','HASIL DOWNLOAD')}});
+  const legacyLabel=q('#dialLabel'),legacyValue=q('#dialValue');function syncLegacy(){const label=(legacyLabel?.textContent||'').toUpperCase(),raw=parseFloat(legacyValue?.textContent);if(!Number.isFinite(raw))return;if(label.includes('LIVE DOWNLOAD'))setTarget(raw,'download','DOWNLOAD');if(label.includes('LIVE UPLOAD'))setTarget(raw,'upload','UPLOAD')}[legacyLabel,legacyValue].filter(Boolean).forEach(el=>new MutationObserver(syncLegacy).observe(el,{childList:true,characterData:true,subtree:true}));
+  const stage=q('#testStage');if(stage)new MutationObserver(()=>{const text=stage.textContent.toLowerCase();if(text.includes('loaded latency'))showTransition('ANALISIS JARINGAN','Mengukur loaded latency…','Latency tambahan saat koneksi sibuk: semakin rendah semakin baik.');else if(text.includes('dns'))showTransition('DNS CHECK','Menguji resolver…','Tahap akhir diagnostik sebelum hasil dikunci.')}).observe(stage,{childList:true,characterData:true,subtree:true});
+  const engine=q('#engineState');if(engine)new MutationObserver(()=>{const s=engine.textContent.trim().toUpperCase();if(s==='RUNNING')q('.phase-steps')?.querySelectorAll('span').forEach(el=>el.classList.remove('done','active'));if(s==='COMPLETE'){q('.phase-steps')?.querySelectorAll('span').forEach(el=>{el.classList.remove('active');el.classList.add('done')});const exact=sessionValue('download');if(Number.isFinite(exact))setTarget(exact,'download','HASIL DOWNLOAD');else setTimeout(()=>{const fallback=parseFloat(q('#downloadValue')?.textContent);if(Number.isFinite(fallback))setTarget(fallback,'download','HASIL DOWNLOAD')},700);showTransition('TES SELESAI','Semua pengukuran selesai','Hasil final memakai sustained result Engine v5 + convergence + integrity audit.','green')}}).observe(engine,{childList:true,characterData:true,subtree:true});
   q('#speedUnitSelect')?.addEventListener('change',setScale);
 }).catch(()=>{});
