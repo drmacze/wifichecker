@@ -30,6 +30,7 @@ jobs:
           node --input-type=module --check < advanced-diagnostics.js
           node --input-type=module --check < result-audit.js
           node --input-type=module --check < video-test.js
+          node --input-type=module --check < video-quality-lock.js
           node --input-type=module --check < video-modern-controller.js
 
       - name: Check referenced DOM IDs
@@ -47,33 +48,34 @@ jobs:
           print(f'OK: {len(used_app)} app engine IDs found in HTML')
           PY
 
-      - name: Check Engine v6, continuous meter and modern video
+      - name: Check Engine v6, continuous meter and strict video quality
         run: |
           python3 - <<'PY'
           from pathlib import Path
           motion=Path('motion.js').read_text(); motion_css=Path('motion.css').read_text(); engine=Path('engine-v6.js').read_text()
           flow=Path('meter-flow.js').read_text(); meter_perf=Path('meter-performance.js').read_text(); v6ui=Path('engine-v6-ui.js').read_text()
           accuracy=Path('accuracy.js').read_text(); advanced=Path('advanced-diagnostics.js').read_text(); audit=Path('result-audit.js').read_text(); audit_css=Path('result-audit.css').read_text()
-          video=Path('video-test.js').read_text(); modern=Path('video-modern-controller.js').read_text(); video_css=Path('video-test.css').read_text(); modern_css=Path('video-modern.css').read_text(); sw=Path('sw.js').read_text()
-          required_motion=["import('./engine-v6.js')",'wifiCheckerEngineV6','touchLike',"import('./meter-performance.js')", "import('./engine-v6-ui.js')", "import('./video-test.js')", "import('./video-modern-controller.js')"]
+          video=Path('video-test.js').read_text(); lock=Path('video-quality-lock.js').read_text(); modern=Path('video-modern-controller.js').read_text(); video_css=Path('video-test.css').read_text(); modern_css=Path('video-modern.css').read_text(); sw=Path('sw.js').read_text()
+          required_motion=["import('./engine-v6.js')",'wifiCheckerEngineV6','touchLike',"import('./meter-performance.js')", "import('./engine-v6-ui.js')", "import('./video-test.js')", "import('./video-quality-lock.js').then(()=>import('./video-modern-controller.js'))"]
           required_css=["@import url('./result-audit.css')", "@import url('./video-test.css')", "@import url('./video-modern.css')"]
           required_engine=['version:6',"method:'performance-aware-saturation-http'",'performanceAwareConcurrency:true','saturationPlateauDetection:true','twoStageCalibration:true','uiFrameMonitoring:true','warmupCalibration:true','convergenceControl:true','confidenceRange:true','contentionHeuristics:true','runBurst','adaptiveStreams','plateauState','relativeCIWidth','frameStalls','nextFrame','runningMedian','wifi-measurement-audit']
           required_flow=['KALIBRASI','convergence','wifiMeasurementSession','flowGaugeValue','flowGaugeNeedle','requestAnimationFrame','runningMedian','liveEstimate','scaleLocked','displayMax','targetMax','continuousEstimator:true','usesRunningMedian:true','scaleInterpolation:true','finalResultUnsmoothened:true','smoothing hanya untuk tampilan live']
+          required_lock=['strictResolution:true','adaptiveMaster:false','verifyActualResolution:true','discoverExact','height===target','Resolution mismatch','video.videoHeight','Requested','Actual','stopImmediatePropagation','wifiVideoQualityLock']
           required_meter_perf=['legacyBridgeIsolation:true','detachLegacyTarget','dialLabel','dialValue','meterBridge']
           required_v6ui=['ENGINE v6 PERFORMANCE','saturationPlateau','frameStalls','Profile','wifiEngineV6UI']
           required_accuracy=['resultWidth','integrityPenalty','contentionSuspected','ci90Low','accuracySource','Paket asli tetap hanya dapat dipastikan']
           required_audit=['RESULT AUDIT','LOCAL BASELINE','auditScore','relativeWidth','wifi-measurement-audit','Sebaiknya ulangi Full Test','contention/cross-traffic']
           required_audit_css=['.audit-grid','.audit-verdict','.baseline-grid']
           required_video=['Video Resolution Test','REAL STREAMING LAB','getVideoPlaybackQuality','Streaming Strength','RSSI/dBm']
-          required_modern=['WING IT!','ee623d80-fd8d-4a2a-8aae-1f5acf796f27','Sprite Fright','api/v1/videos','streamingPlaylists','webkitEnterFullscreen','requestFullscreen','videoFullscreenBtn','stopImmediatePropagation','wifiVideoModern']
+          required_modern=['WING IT!','ee623d80-fd8d-4a2a-8aae-1f5acf796f27','Sprite Fright','webkitEnterFullscreen','requestFullscreen','videoFullscreenBtn','wifiVideoModern']
           required_video_css=['.video-lab','.video-stage','.resolution-picker','.video-metric-grid','.video-verdict','.video-test-launch']
           required_modern_css=['.video-modern-lab','.video-fullscreen-btn','height:100dvh','place-items:stretch']
-          required_cache=['v22-continuous-meter','engine-v6.js','engine-v6-ui.js','meter-flow.js','meter-performance.js','video-test.js','video-modern-controller.js','video-modern.css']
-          missing=([x for x in required_motion if x not in motion]+[x for x in required_css if x not in motion_css]+[x for x in required_engine if x not in engine]+[x for x in required_flow if x not in flow]+[x for x in required_meter_perf if x not in meter_perf]+[x for x in required_v6ui if x not in v6ui]+[x for x in required_accuracy if x not in accuracy]+[x for x in required_audit if x not in audit]+[x for x in required_audit_css if x not in audit_css]+[x for x in required_video if x not in video]+[x for x in required_modern if x not in modern]+[x for x in required_video_css if x not in video_css]+[x for x in required_modern_css if x not in modern_css]+[x for x in required_cache if x not in sw])
+          required_cache=['v23-strict-video-quality','engine-v6.js','engine-v6-ui.js','meter-flow.js','meter-performance.js','video-test.js','video-quality-lock.js','video-modern-controller.js','video-modern.css']
+          missing=([x for x in required_motion if x not in motion]+[x for x in required_css if x not in motion_css]+[x for x in required_engine if x not in engine]+[x for x in required_flow if x not in flow]+[x for x in required_lock if x not in lock]+[x for x in required_meter_perf if x not in meter_perf]+[x for x in required_v6ui if x not in v6ui]+[x for x in required_accuracy if x not in accuracy]+[x for x in required_audit if x not in audit]+[x for x in required_audit_css if x not in audit_css]+[x for x in required_video if x not in video]+[x for x in required_modern if x not in modern]+[x for x in required_video_css if x not in video_css]+[x for x in required_modern_css if x not in modern_css]+[x for x in required_cache if x not in sw])
           if missing: raise SystemExit('Missing integration: '+', '.join(missing))
           if "import('./engine-v5.js')" in motion or 'engine-v5.js' in sw: raise SystemExit('Legacy Engine v5 still active')
           if "import('./engine-v4.js')" in motion or 'engine-v4.js' in sw: raise SystemExit('Legacy Engine v4 still active')
           if "import('./video-ios-hotfix.js')" in motion or 'video-ios-hotfix.js' in sw: raise SystemExit('Legacy iOS video hotfix still active')
-          if '@latest' in motion or '@latest' in video or '@latest' in modern: raise SystemExit('Unpinned dependency detected')
-          print('OK: Engine v6, continuous running-median meter smoothing, exact final result, modern fullscreen video, and PWA v22 are wired')
+          if '@latest' in motion or '@latest' in video or '@latest' in modern or '@latest' in lock: raise SystemExit('Unpinned dependency detected')
+          print('OK: Engine v6, continuous meter smoothing, strict requested-vs-actual video resolution lock, and PWA v23 are wired')
           PY
