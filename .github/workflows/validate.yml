@@ -23,11 +23,13 @@ jobs:
           node --input-type=module --check < workspace.js
           node --input-type=module --check < engine-v5.js
           node --input-type=module --check < meter-flow.js
+          node --input-type=module --check < meter-performance.js
           node --input-type=module --check < intelligence.js
           node --input-type=module --check < accuracy.js
           node --input-type=module --check < advanced-diagnostics.js
           node --input-type=module --check < result-audit.js
           node --input-type=module --check < video-test.js
+          node --input-type=module --check < video-ios-hotfix.js
 
       - name: Check referenced DOM IDs
         run: |
@@ -44,27 +46,30 @@ jobs:
           print(f'OK: {len(used_app)} app engine IDs found in HTML')
           PY
 
-      - name: Check Engine v5 measurement lab and video streaming test
+      - name: Check Engine v5, video fallback and meter performance
         run: |
           python3 - <<'PY'
           from pathlib import Path
           motion=Path('motion.js').read_text(); motion_css=Path('motion.css').read_text(); engine=Path('engine-v5.js').read_text()
-          flow=Path('meter-flow.js').read_text(); accuracy=Path('accuracy.js').read_text(); advanced=Path('advanced-diagnostics.js').read_text()
-          audit=Path('result-audit.js').read_text(); audit_css=Path('result-audit.css').read_text(); video=Path('video-test.js').read_text(); video_css=Path('video-test.css').read_text(); sw=Path('sw.js').read_text()
-          required_motion=["import('./engine-v5.js')",'wifiCheckerEngineV5','syncEngineBadges',"import('./result-audit.js')", "import('./video-test.js')"]
+          flow=Path('meter-flow.js').read_text(); meter_perf=Path('meter-performance.js').read_text(); accuracy=Path('accuracy.js').read_text(); advanced=Path('advanced-diagnostics.js').read_text()
+          audit=Path('result-audit.js').read_text(); audit_css=Path('result-audit.css').read_text(); video=Path('video-test.js').read_text(); ios=Path('video-ios-hotfix.js').read_text(); video_css=Path('video-test.css').read_text(); sw=Path('sw.js').read_text()
+          required_motion=["import('./engine-v5.js')",'wifiCheckerEngineV5','touchLike',"import('./meter-performance.js')", "import('./video-test.js')", "import('./video-ios-hotfix.js')"]
           required_css=["@import url('./result-audit.css')", "@import url('./video-test.css')"]
           required_engine=['version:5',"method:'adaptive-convergent-multistream-http'",'warmupCalibration:true','adaptiveStreamRamping:true','convergenceControl:true','confidenceRange:true','contentionHeuristics:true','edgeConsistency:true','runBurst','adaptiveStreams','rejectOutliers','ci90','convergence','autoExtended','earlyStopped','warmupDiscarded','contentionSuspected','wifi-measurement-audit']
-          required_flow=['KALIBRASI','convergence','sustained result Engine v5','wifiMeasurementSession','flowGaugeValue','flowGaugeNeedle']
+          required_flow=['KALIBRASI','convergence','wifiMeasurementSession','flowGaugeValue','flowGaugeNeedle','lastSampleUiAt','requestAnimationFrame','state.lastValue']
+          required_meter_perf=['legacyBridgeIsolation:true','detachLegacyTarget','dialLabel','dialValue','meterBridge']
           required_accuracy=['resultWidth','integrityPenalty','contentionSuspected','ci90Low','accuracySource','Paket asli tetap hanya dapat dipastikan']
           required_audit=['RESULT AUDIT','LOCAL BASELINE','auditScore','relativeWidth','wifi-measurement-audit','Sebaiknya ulangi Full Test','contention/cross-traffic']
           required_audit_css=['.audit-grid','.audit-verdict','.baseline-grid']
-          required_video=['Video Resolution Test','REAL STREAMING LAB','shaka-player@5.2.7','sintel-mp4-only/dash.mpd','angel-one-hls-apple/master.m3u8','isIOSFamily','parseHlsMaster','startNativeHls','nativeHlsIOS:true','selectVariantTrack','getVideoPlaybackQuality','buffered','rebuffers','Resource timing','Engine v5','beginPlaybackClock','Streaming Strength','RSSI/dBm']
+          required_video=['Video Resolution Test','REAL STREAMING LAB','shaka-player@5.2.7','sintel-mp4-only/dash.mpd','isIOSFamily','startNativeHls','nativeHlsIOS:true','selectVariantTrack','getVideoPlaybackQuality','Streaming Strength','RSSI/dBm']
+          required_ios=['HLS_SOURCES',"a['AVERAGE-BANDWIDTH']",'parseMaster','adaptiveFallback','loadedmetadata','Media error','native HLS','stopImmediatePropagation','wifiVideoIOSFix']
           required_video_css=['.video-lab','.video-stage','.resolution-picker','.video-metric-grid','.video-verdict','.video-test-launch']
-          required_cache=['v19-ios-native-hls','engine-v5.js','result-audit.js','result-audit.css','video-test.js','video-test.css','accuracy.js','meter-flow.js']
-          missing=([x for x in required_motion if x not in motion]+[x for x in required_css if x not in motion_css]+[x for x in required_engine if x not in engine]+[x for x in required_flow if x not in flow]+[x for x in required_accuracy if x not in accuracy]+[x for x in required_audit if x not in audit]+[x for x in required_audit_css if x not in audit_css]+[x for x in required_video if x not in video]+[x for x in required_video_css if x not in video_css]+[x for x in required_cache if x not in sw])
+          required_cache=['v20-video-meter-performance','engine-v5.js','meter-flow.js','meter-performance.js','video-test.js','video-ios-hotfix.js','video-test.css']
+          missing=([x for x in required_motion if x not in motion]+[x for x in required_css if x not in motion_css]+[x for x in required_engine if x not in engine]+[x for x in required_flow if x not in flow]+[x for x in required_meter_perf if x not in meter_perf]+[x for x in required_accuracy if x not in accuracy]+[x for x in required_audit if x not in audit]+[x for x in required_audit_css if x not in audit_css]+[x for x in required_video if x not in video]+[x for x in required_ios if x not in ios]+[x for x in required_video_css if x not in video_css]+[x for x in required_cache if x not in sw])
           if missing: raise SystemExit('Missing integration: '+', '.join(missing))
+          if 'a.AVERAGE-BANDWIDTH' in ios: raise SystemExit('Broken HLS AVERAGE-BANDWIDTH property syntax detected')
           if "import('./engine-v4.js')" in motion or 'engine-v4.js' in sw: raise SystemExit('Legacy Engine v4 still active')
           if "import('./engine-v3.js')" in motion or 'engine-v3.js' in sw: raise SystemExit('Legacy Engine v3 still active')
-          if '@latest' in motion or '@latest' in video: raise SystemExit('Unpinned dependency detected')
-          print('OK: Engine v5, Result Audit, desktop DASH, iOS native HLS resolution locking, playback QoE metrics, recommendation logic, and PWA v19 are wired')
+          if '@latest' in motion or '@latest' in video or '@latest' in ios: raise SystemExit('Unpinned dependency detected')
+          print('OK: Engine v5, robust iOS native HLS fallback, mobile native scrolling, isolated legacy gauge, throttled meter DOM updates, and PWA v20 are wired')
           PY
