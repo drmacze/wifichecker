@@ -48,6 +48,7 @@ Promise.allSettled([
   import('./quality.js'),
   import('./meter-flow.js'),
   import('./meter-performance.js'),
+  import('./engine-v6-ui.js'),
   import('./intelligence.js'),
   import('./accuracy.js'),
   import('./advanced-diagnostics.js'),
