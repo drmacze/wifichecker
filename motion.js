@@ -43,7 +43,7 @@ const engineBoot=import('./engine-v6.js').then(()=>{
   testButtons.forEach((btn,i)=>{btn.disabled=false;delete btn.dataset.engineLoading;const label=btn.querySelector('b,span');if(label&&initialButtonLabels[i])label.textContent=initialButtonLabels[i]});
 });
 
-const videoBoot=import('./video-resolution-lab.js').then(()=>import('./video-modern-controller.js'));
+const videoBoot=import('./video-connection-lab.js');
 Promise.allSettled([
   engineBoot,
   import('./quality.js'),
