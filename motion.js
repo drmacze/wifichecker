@@ -43,6 +43,7 @@ const engineBoot=import('./engine-v6.js').then(()=>{
   testButtons.forEach((btn,i)=>{btn.disabled=false;delete btn.dataset.engineLoading;const label=btn.querySelector('b,span');if(label&&initialButtonLabels[i])label.textContent=initialButtonLabels[i]});
 });
 
+const videoBoot=import('./video-quality-lock.js').then(()=>import('./video-modern-controller.js'));
 Promise.allSettled([
   engineBoot,
   import('./quality.js'),
@@ -54,5 +55,5 @@ Promise.allSettled([
   import('./advanced-diagnostics.js'),
   import('./result-audit.js'),
   import('./video-test.js'),
-  import('./video-modern-controller.js')
+  videoBoot
 ]).then(results=>{results.forEach((r,i)=>{if(r.status==='rejected')console.warn('[ui module] fallback',i,r.reason)});syncEngineBadges(window.wifiMeasurementSession?.version||6)});
