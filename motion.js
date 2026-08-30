@@ -32,14 +32,14 @@ loadLibraries().then(({Lenis,gsap,ScrollTrigger})=>{
 
 const testButtons=['runTestBtn','quickCheckBtn'].map(id=>document.getElementById(id)).filter(Boolean),initialButtonLabels=testButtons.map(btn=>btn.querySelector('b,span')?.textContent||'');
 testButtons.forEach(btn=>{btn.disabled=true;btn.dataset.engineLoading='true'});
-function syncEngineBadges(version=5){let tries=0;const timer=setInterval(()=>{tries++;document.querySelectorAll('#engineVersionPill').forEach(el=>el.textContent=`ENGINE v${version}`);if(tries>=30)clearInterval(timer)},100)}
+function syncEngineBadges(version=6){let tries=0;const timer=setInterval(()=>{tries++;document.querySelectorAll('#engineVersionPill').forEach(el=>el.textContent=`ENGINE v${version}`);if(tries>=30)clearInterval(timer)},100)}
 
-const engineBoot=import('./engine-v5.js').then(()=>{
-  if(!window.wifiCheckerEngineV5)throw new Error('Engine v5 tidak siap.');
+const engineBoot=import('./engine-v6.js').then(()=>{
+  if(!window.wifiCheckerEngineV6)throw new Error('Engine v6 tidak siap.');
   testButtons.forEach(btn=>{if(document.getElementById('engineState')?.textContent.trim().toUpperCase()!=='RUNNING')btn.disabled=false;delete btn.dataset.engineLoading});
-  document.documentElement.dataset.engineVersion='5';syncEngineBadges(5);
+  document.documentElement.dataset.engineVersion='6';syncEngineBadges(6);
 }).catch(err=>{
-  console.warn('[engine-v5] fallback',err);
+  console.warn('[engine-v6] fallback',err);
   testButtons.forEach((btn,i)=>{btn.disabled=false;delete btn.dataset.engineLoading;const label=btn.querySelector('b,span');if(label&&initialButtonLabels[i])label.textContent=initialButtonLabels[i]});
 });
 
@@ -53,5 +53,5 @@ Promise.allSettled([
   import('./advanced-diagnostics.js'),
   import('./result-audit.js'),
   import('./video-test.js'),
-  import('./video-ios-hotfix.js')
-]).then(results=>{results.forEach((r,i)=>{if(r.status==='rejected')console.warn('[ui module] fallback',i,r.reason)});syncEngineBadges(window.wifiMeasurementSession?.version||5)});
+  import('./video-modern-controller.js')
+]).then(results=>{results.forEach((r,i)=>{if(r.status==='rejected')console.warn('[ui module] fallback',i,r.reason)});syncEngineBadges(window.wifiMeasurementSession?.version||6)});
