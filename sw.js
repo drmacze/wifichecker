@@ -1,5 +1,5 @@
-const CACHE = 'wifi-checker-pro-v20-video-meter-performance';
-const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './quality.css', './meter-flow.css', './intelligence.css', './advanced-diagnostics.css', './result-audit.css', './video-test.css', './workspace.css', './app.js', './motion.js', './engine-v5.js', './quality.js', './meter-flow.js', './meter-performance.js', './intelligence.js', './accuracy.js', './advanced-diagnostics.js', './result-audit.js', './video-test.js', './video-ios-hotfix.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'wifi-checker-pro-v21-engine-v6-modern-video';
+const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './quality.css', './meter-flow.css', './intelligence.css', './advanced-diagnostics.css', './result-audit.css', './video-test.css', './video-modern.css', './workspace.css', './app.js', './motion.js', './engine-v6.js', './quality.js', './meter-flow.js', './meter-performance.js', './engine-v6-ui.js', './intelligence.js', './accuracy.js', './advanced-diagnostics.js', './result-audit.js', './video-test.js', './video-modern-controller.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)));
