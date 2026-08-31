@@ -1,4 +1,4 @@
-const CACHE = 'wifi-checker-pro-v26-video-connection-profiles';
+const CACHE = 'wifi-checker-pro-v27-deterministic-video-profiles';
 const APP_SHELL = ['./', './index.html', './styles.css', './motion.css', './quality.css', './meter-flow.css', './intelligence.css', './advanced-diagnostics.css', './result-audit.css', './video-test.css', './video-modern.css', './video-resolution-proof.css', './workspace.css', './app.js', './motion.js', './engine-v6.js', './quality.js', './meter-flow.js', './meter-performance.js', './engine-v6-ui.js', './intelligence.js', './accuracy.js', './advanced-diagnostics.js', './result-audit.js', './video-test.js', './video-connection-lab.js', './workspace.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (event) => {
