@@ -30,7 +30,7 @@ jobs:
           node --input-type=module --check < advanced-diagnostics.js
           node --input-type=module --check < result-audit.js
           node --input-type=module --check < video-test.js
-          node --input-type=module --check < video-connection-lab.js
+          node --input-type=module --check < video-youtube-quality.js
 
       - name: Check referenced DOM IDs
         run: |
@@ -47,19 +47,19 @@ jobs:
           print(f'OK: {len(used_app)} app engine IDs found in HTML')
           PY
 
-      - name: Check Engine v6, continuous meter and deterministic video profiles
+      - name: Check Engine v6, continuous meter and physical video quality profiles
         run: |
           python3 - <<'PY'
           from pathlib import Path
           motion=Path('motion.js').read_text(); motion_css=Path('motion.css').read_text(); engine=Path('engine-v6.js').read_text()
           flow=Path('meter-flow.js').read_text(); meter_perf=Path('meter-performance.js').read_text(); v6ui=Path('engine-v6-ui.js').read_text()
           accuracy=Path('accuracy.js').read_text(); audit=Path('result-audit.js').read_text(); audit_css=Path('result-audit.css').read_text()
-          video=Path('video-test.js').read_text(); lab=Path('video-connection-lab.js').read_text(); video_css=Path('video-test.css').read_text(); modern_css=Path('video-modern.css').read_text(); proof_css=Path('video-resolution-proof.css').read_text(); sw=Path('sw.js').read_text()
-          required_motion=["import('./engine-v6.js')",'wifiCheckerEngineV6','touchLike',"import('./meter-performance.js')", "import('./engine-v6-ui.js')", "import('./video-test.js')", "import('./video-connection-lab.js')"]
+          video=Path('video-test.js').read_text(); lab=Path('video-youtube-quality.js').read_text(); video_css=Path('video-test.css').read_text(); modern_css=Path('video-modern.css').read_text(); proof_css=Path('video-resolution-proof.css').read_text(); sw=Path('sw.js').read_text()
+          required_motion=["import('./engine-v6.js')",'wifiCheckerEngineV6','touchLike',"import('./meter-performance.js')", "import('./engine-v6-ui.js')", "import('./video-test.js')", "import('./video-youtube-quality.js')"]
           required_css=["@import url('./result-audit.css')", "@import url('./video-test.css')", "@import url('./video-modern.css')", "@import url('./video-resolution-proof.css')"]
           required_engine=['version:6',"method:'performance-aware-saturation-http'",'performanceAwareConcurrency:true','saturationPlateauDetection:true','twoStageCalibration:true','uiFrameMonitoring:true','warmupCalibration:true','convergenceControl:true','confidenceRange:true','contentionHeuristics:true','runBurst','adaptiveStreams','runningMedian','wifi-measurement-audit']
           required_flow=['KALIBRASI','convergence','wifiMeasurementSession','flowGaugeValue','flowGaugeNeedle','requestAnimationFrame','runningMedian','liveEstimate','continuousEstimator:true','usesRunningMedian:true','scaleInterpolation:true','finalResultUnsmoothened:true']
-          required_lab=['MEDIA_BASE','TARGETS=[360,480,720,1080,1440,2160]','360p.vp9.webm','480p.vp9.webm','720p.vp9.webm','1080p.vp9.webm','1440p.vp9.webm','2160p.vp9.webm','718000','1220000','2120000','3790000','7940000','16450000','sampleDelivery','Playback delivery','video.videoHeight','connectionTest=${Date.now()}','deterministicProfiles:true','noDerivativeDiscovery:true','cacheBustedPlayback:true','deviceVsNetworkDiagnosis:true','requiredBitratesMbps','wifiVideoConnectionLab']
+          required_lab=['https://remotion.media/video-360p.mp4','https://remotion.media/video-480p.mp4','https://remotion.media/video-720p.mp4','https://remotion.media/video-1080p.mp4','https://remotion.media/video-1440p.mp4','https://remotion.media/video-2160p.mp4','width:640,height:360','width:854,height:480','width:1280,height:720','width:1920,height:1080','width:2560,height:1440','width:3840,height:2160','targetMbps:1.0','targetMbps:2.5','targetMbps:5.0','targetMbps:8.0','targetMbps:16.0','targetMbps:40.0','video.videoHeight','video.videoWidth','Live probe','speed.cloudflare.com/__down','mode:\'youtube-like-fixed-quality\'','physicalPixels:true','verifyDecodedResolution:true','liveThroughputProbe:true','wifiVideoYoutubeQuality','stopImmediatePropagation']
           required_meter_perf=['legacyBridgeIsolation:true','detachLegacyTarget','dialLabel','dialValue','meterBridge']
           required_v6ui=['ENGINE v6 PERFORMANCE','saturationPlateau','frameStalls','Profile','wifiEngineV6UI']
           required_accuracy=['resultWidth','integrityPenalty','contentionSuspected','ci90Low','accuracySource','Paket asli tetap hanya dapat dipastikan']
@@ -69,14 +69,13 @@ jobs:
           required_video_css=['.video-lab','.video-stage','.resolution-picker','.video-metric-grid','.video-verdict','.video-test-launch']
           required_modern_css=['.video-modern-lab','.video-fullscreen-btn','height:100dvh','place-items:stretch']
           required_proof_css=['.video-resolution-proof','.resolution-detail-zoom','DETAIL 4×']
-          required_cache=['v27-deterministic-video-profiles','engine-v6.js','meter-flow.js','video-test.js','video-connection-lab.js','video-resolution-proof.css']
+          required_cache=['v28-youtube-like-quality','engine-v6.js','meter-flow.js','video-test.js','video-youtube-quality.js','video-resolution-proof.css']
           missing=([x for x in required_motion if x not in motion]+[x for x in required_css if x not in motion_css]+[x for x in required_engine if x not in engine]+[x for x in required_flow if x not in flow]+[x for x in required_lab if x not in lab]+[x for x in required_meter_perf if x not in meter_perf]+[x for x in required_v6ui if x not in v6ui]+[x for x in required_accuracy if x not in accuracy]+[x for x in required_audit if x not in audit]+[x for x in required_audit_css if x not in audit_css]+[x for x in required_video if x not in video]+[x for x in required_video_css if x not in video_css]+[x for x in required_modern_css if x not in modern_css]+[x for x in required_proof_css if x not in proof_css]+[x for x in required_cache if x not in sw])
           if missing: raise SystemExit('Missing integration: '+', '.join(missing))
-          if 'videoinfo' in lab or 'WIKIMEDIA_API' in lab: raise SystemExit('Fragile Wikimedia derivative discovery is active')
-          if "import('./video-resolution-lab.js')" in motion or 'video-resolution-lab.js' in sw: raise SystemExit('Legacy resolution controller active')
-          if "import('./video-modern-controller.js')" in motion or 'video-modern-controller.js' in sw: raise SystemExit('Legacy modern controller active')
-          if "import('./video-quality-lock.js')" in motion or 'video-quality-lock.js' in sw: raise SystemExit('Legacy video quality lock active')
+          legacy=["import('./video-connection-lab.js')","import('./video-resolution-lab.js')","import('./video-modern-controller.js')","import('./video-quality-lock.js')"]
+          if any(x in motion for x in legacy): raise SystemExit('Legacy video controller still active')
+          if any(x in sw for x in ['video-connection-lab.js','video-resolution-lab.js','video-modern-controller.js','video-quality-lock.js']): raise SystemExit('Legacy video controller still cached')
           if "import('./engine-v5.js')" in motion or 'engine-v5.js' in sw: raise SystemExit('Legacy Engine v5 active')
           if '@latest' in motion or '@latest' in video or '@latest' in lab: raise SystemExit('Unpinned dependency detected')
-          print('OK: Engine v6, continuous meter, deterministic Wikimedia 360p-4K profiles, cache-busted playback delivery, and PWA v27 are wired')
+          print('OK: Engine v6, continuous meter, physical 360p-4K MP4 quality switching, live connection probe, and PWA v28 are wired')
           PY
